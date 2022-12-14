@@ -1,0 +1,8 @@
+# Intellij
+*.ipr
+*.iml
+*.iws
+.idea/
+
+#C
+build/
