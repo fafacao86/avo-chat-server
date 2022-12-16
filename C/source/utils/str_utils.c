@@ -169,7 +169,7 @@ void parse_heartbeat_responce(const char* msg, char* Token_buffer, int token_buf
     {
         log_error("heartbeat_cJSON parse error");
     }
-    cJSON* token = cJSON_GetObjectItem(heartbeat_cJSON, "Token");
+    cJSON* token = cJSON_GetObjectItem(heartbeat_cJSON, "token");
     strncpy(Token_buffer, token->valuestring, token_buffer_size);
     pthread_mutex_unlock(&CJSON_MUTEX);
 }
@@ -187,19 +187,16 @@ void parse_notify_msg(const char* msg, struct notify_item * notify_msg_buffer){
     cJSON* notify_type = cJSON_GetObjectItem(notify_cJSON, "type");
     notify_msg_buffer->type = notify_type->valueint;
 
-    cJSON* notify_from = cJSON_GetObjectItem(notify_cJSON, "from");
-    strncpy(notify_msg_buffer->from, notify_from->valuestring, sizeof(notify_msg_buffer->from));
+    cJSON* notify_from = cJSON_GetObjectItem(notify_cJSON, "puller");
+    strncpy(notify_msg_buffer->puller, notify_from->valuestring, sizeof(notify_msg_buffer->puller));
 
-    cJSON* notify_to = cJSON_GetObjectItem(notify_cJSON, "to");
-    strncpy(notify_msg_buffer->to, notify_to->valuestring, sizeof(notify_msg_buffer->to));
-
-    cJSON* notify_sender_ip = cJSON_GetObjectItem(notify_cJSON, "sender_token");
-    strncpy(notify_msg_buffer->sender_token, notify_sender_ip->valuestring, sizeof(notify_msg_buffer->sender_token));
+    cJSON* notify_to = cJSON_GetObjectItem(notify_cJSON, "pull_target");
+    strncpy(notify_msg_buffer->pull_target, notify_to->valuestring, sizeof(notify_msg_buffer->pull_target));
     pthread_mutex_unlock(&CJSON_MUTEX);
 }
 
 
-void create_notify_json(int type, char* from, char* to, char *sender,char* json_buffer, int json_buffer_size){
+void create_notify_json(int type, char* puller, char* pull_target,char* json_buffer, int json_buffer_size){
     pthread_mutex_lock(&CJSON_MUTEX);
     cJSON* notify_cJSON = NULL;
     notify_cJSON =cJSON_CreateObject();
@@ -208,11 +205,12 @@ void create_notify_json(int type, char* from, char* to, char *sender,char* json_
         log_error("notify_cJSON create error");
     }
     cJSON_AddNumberToObject(notify_cJSON, "type", T_P2P);
-    cJSON_AddNumberToObject(notify_cJSON, "from", atoi(from));
-    cJSON_AddNumberToObject(notify_cJSON, "to", atoi(to));
-    cJSON_AddNumberToObject(notify_cJSON, "sender_token", atoi(sender));
+    cJSON_AddNumberToObject(notify_cJSON, "puller", atoi(puller));
+    cJSON_AddNumberToObject(notify_cJSON, "pull_target", atoi(pull_target));
     char* json = cJSON_Print(notify_cJSON);
     strncpy(json_buffer, json, json_buffer_size);
+    free(json);
+    pthread_mutex_unlock(&CJSON_MUTEX);
 }
 
 
@@ -244,6 +242,26 @@ void parse_close_connection_json(const char* json_msg, int* heartbeat_fd){
     *heartbeat_fd = close_connection_heartbeat_fd->valueint;
     pthread_mutex_unlock(&CJSON_MUTEX);
 }
+
+
+void create_heartbeat_request_json(char* json_buffer){
+    pthread_mutex_lock(&CJSON_MUTEX);
+    cJSON* heartbeat_cJSON = NULL;
+    heartbeat_cJSON =cJSON_CreateObject();
+    if (heartbeat_cJSON == NULL)
+    {
+        log_error("heartbeat_cJSON create error");
+    }
+    cJSON_AddNumberToObject(heartbeat_cJSON, "heartbeat", 1);
+    char* json = cJSON_Print(heartbeat_cJSON);
+    strncpy(json_buffer, json, SOCKET_BUFSIZE);
+    free(json);
+    pthread_mutex_unlock(&CJSON_MUTEX);
+
+}
+
+
+
 
 
 void print_logo(){

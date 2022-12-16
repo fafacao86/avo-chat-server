@@ -10,15 +10,14 @@
 #define T_P2G 2
 
 struct notify_item {
-    char sender_token[2048];
     int type;
-    char from[16];
-    char to[16];
+    char puller[16];
+    char pull_target[16];
 };
 
 
 
-#define T_LISTEN 0
+#define T_LISTEN 6
 #define T_HEARTBEAT 1
 #define T_NOTIFY 2
 #define T_FILE 3

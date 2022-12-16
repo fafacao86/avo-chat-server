@@ -145,40 +145,42 @@ int connect_to_client(int listen_fd, int* type){
         return -1;
     }
     redisReply* reply;
+    pthread_mutex_lock(&REDIS_MUTEX);
     reply = redisCommand(REDIS_CONTEXT, "HEXISTS %s", token);
     if (reply->type == REDIS_REPLY_NIL){
         close(connfd);
         return 0;
     }
 
-    pthread_mutex_lock(&CLOSE_MUTEX[connfd]);
-    pthread_mutex_lock(&REDIS_MUTEX);
-
-
     reply = redisCommand(REDIS_CONTEXT, "HSET %s %d %d", token, *type, connfd);
     if (reply == NULL) {
         log_fatal("redis command failed");
-        exit(-1);
+        //exit(-1);
     }
     freeReplyObject(reply);
 
-    reply = redisCommand(REDIS_CONTEXT, "SADD online_users_fd %d", connfd);
-    if (reply == NULL) {
-        log_fatal("redis command failed");
-        exit(-1);
+
+    if(*type == T_HEARTBEAT){
+        reply = redisCommand(REDIS_CONTEXT, "SADD online_users_fd %d", connfd);
+        if (reply == NULL) {
+            log_fatal("redis command failed");
+            //exit(-1);
+        }
+        freeReplyObject(reply);
     }
-    freeReplyObject(reply);
+
 
     reply = redisCommand(REDIS_CONTEXT, "EXPIRE %s %d", token, TOKEN_EXPIRE_TIME);
     freeReplyObject(reply);
 
     pthread_mutex_unlock(&REDIS_MUTEX);
 
+    pthread_mutex_lock(&CLOSE_MUTEX[connfd]);
     CLOSE_FLAGS[connfd].type = *type;
     CLOSE_FLAGS[connfd].tid = -1;
     strncpy(CLOSE_FLAGS[connfd].token, token, sizeof(CLOSE_FLAGS[connfd].token));
     pthread_mutex_unlock(&CLOSE_MUTEX[connfd]);
-
+    log_info("new connection from \033[32m%s:%d\033[0m", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
     return connfd;
 }
 
@@ -239,7 +241,6 @@ void close_client_connection(int heartbeat_fd){
     if (CLOSE_FLAGS[heartbeat_fd].tid == -1){
         close(notify_fd);
         close(file_fd);
-        event_loop_del(EVENT_LOOP,heartbeat_fd);
         event_loop_del(EVENT_LOOP,file_fd);
         close(heartbeat_fd);
         if (file_fd != -1 && notify_fd != -1){
@@ -249,14 +250,16 @@ void close_client_connection(int heartbeat_fd){
             freeReplyObject(reply);
         }
     }else{
-        event_loop_del(EVENT_LOOP,heartbeat_fd);
         event_loop_del(EVENT_LOOP,file_fd);
         close_socket(notify_fd);
         close_socket(file_fd);
         close(heartbeat_fd);
     }
-    redisCommand(REDIS_CONTEXT, "HDEL %s %d", token, heartbeat_fd);
-    redisCommand(REDIS_CONTEXT, "SREM online_users_fd %d", heartbeat_fd);
+    reply = redisCommand(REDIS_CONTEXT, "HDEL %s %d", token, heartbeat_fd);
+    freeReplyObject(reply);
+    reply = redisCommand(REDIS_CONTEXT, "SREM online_users_fd %d", heartbeat_fd);
+    freeReplyObject(reply);
+    reply = redisCommand(REDIS_CONTEXT, "DEL %s", token);
     freeReplyObject(reply);
     pthread_mutex_unlock(&CLOSE_MUTEX[heartbeat_fd]);
     pthread_mutex_unlock(&REDIS_MUTEX);

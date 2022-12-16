@@ -42,44 +42,19 @@ int event_loop_add_fd(struct event_loop *loop, int fd, unsigned int events, int 
     }
     set_nonblocking(fd);
     struct epoll_event event;
-    event.data.u32 = type;
+    event.data.u64 = fd;
+    event.data.u64 = (event.data.u64 << 32) | type;
     event.events = events;
     if (epoll_ctl(loop->epoll_fd, EPOLL_CTL_ADD, fd, &event) == -1) {
         log_error("epoll_ctl");
         return -1;
     }
     loop->event_count++;
-    switch (type) {
-        case 0:
-            strncpy(type_name, "Listening", 32);
-            break;
-        case 1:
-            strncpy(type_name, "Heartbeat", 32);
-            break;
-        case 2:
-            strncpy(type_name, "Notify", 32);
-            break;
-        case 3:
-            strncpy(type_name, "FileUpload", 32);
-            break;
-        case 4:
-            strncpy(type_name, "Signal_Handling", 32);
-            break;
-        case 5:
-            strncpy(type_name, "Pipe", 32);
-            break;
-        default:
-            strncpy(type_name, "Unknown", 32);
-            break;
-    }
-
-
     return 0;
 }
 
 int event_loop_del(struct event_loop *loop, int fd)
 {
-    pthread_mutex_destroy(&FD_MUTEX_ARRAY[fd]);
     if (epoll_ctl(loop->epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1) {
         log_error("epoll_ctl");
         return -1;
@@ -90,7 +65,7 @@ int event_loop_del(struct event_loop *loop, int fd)
 
 int event_loop_wait(struct event_loop *loop, int timeout)
 {
-    int count = epoll_wait(loop->epoll_fd, loop->events, loop->event_capacity, timeout);
+    int count = epoll_wait(loop->epoll_fd, loop->events, EVENT_MAX, timeout);
     if (count == -1) {
         log_error("epoll_wait");
         return -1;

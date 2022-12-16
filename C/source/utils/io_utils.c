@@ -23,7 +23,7 @@
 int readn(int fd, void *vptr, int n)
 {
 
-    int  nleft;
+    int  nleft = n;
     int nread;
     char   *ptr;
 
@@ -32,23 +32,10 @@ int readn(int fd, void *vptr, int n)
     while (nleft > 0) {
         if ( (nread = (int)read(fd, ptr, nleft)) < 0) {
             if (errno == EINTR) {
-                pthread_mutex_lock(&CLOSE_MUTEX[fd]);
-                if (CLOSE_FLAGS[fd].flag == 1){
-                    pthread_mutex_unlock(&CLOSE_MUTEX[fd]);
-                    return 0;
-                }
-                pthread_mutex_unlock(&CLOSE_MUTEX[fd]);
+                nread  = 0;
             }/* and call read() again */
-            else if(errno == EWOULDBLOCK || errno == EAGAIN){
-                pthread_mutex_lock(&CLOSE_MUTEX[fd]);
-                if (CLOSE_FLAGS[fd].flag == 1){
-                    pthread_mutex_unlock(&CLOSE_MUTEX[fd]);
-                    return 0;
-                }
-                pthread_mutex_unlock(&CLOSE_MUTEX[fd]);
-            }else
-                return (-1);
         } else if (nread == 0){
+            log_error("client closed the connection actively, fd: %d", fd);
             close(fd);
             break;
         }/* EOF */
@@ -71,11 +58,7 @@ int writen(int fd, const void *vptr, int n)
     while (nleft > 0) {
         if ( (nwritten = write(fd, ptr, nleft)) <= 0) {
             if (nwritten < 0&& errno == EINTR){
-                pthread_mutex_lock(&CLOSE_MUTEX[fd]);
-                if (CLOSE_FLAGS[fd].flag == 1){
-                    pthread_mutex_unlock(&CLOSE_MUTEX[fd]);
-                    return 0;
-                }
+                nwritten = 0;
             }/* and call write() again */
             else{
                 log_error_with_errno("writen error");
@@ -117,7 +100,7 @@ again:
 
 
 int get_json_string_from_socket(char* json_buffer, int socket_fd){
-    char message_size[SOCKET_MSG_DIGIT_NUM];
+    char message_size[SOCKET_MSG_DIGIT_NUM+1] = {'\0'};
     int read_fd = socket_fd;
     int read_size = readn(read_fd, message_size, SOCKET_MSG_DIGIT_NUM);
     if(read_size != SOCKET_MSG_DIGIT_NUM){
@@ -133,7 +116,7 @@ int get_json_string_from_socket(char* json_buffer, int socket_fd){
         log_error("json size error");
         return -1;
     }
-
+    log_info("json size %d", json_size);
     read_size = readn(read_fd, json_buffer, json_size);
     if(read_size != json_size){
         log_error("read size error");
@@ -142,6 +125,7 @@ int get_json_string_from_socket(char* json_buffer, int socket_fd){
         log_error("socket closed %d", read_fd);
         return -1;
     }
+    json_buffer[json_size] = '\0';
 
     return 0;
 }
@@ -150,10 +134,10 @@ int get_json_string_from_socket(char* json_buffer, int socket_fd){
 int send_json_string_to_socket(char* json_buffer, int socket_fd){
     int json_size = (int)strlen(json_buffer);
     if(json_size > SOCKET_BUFSIZE){
-        log_error("json size error");
+        log_error("json string too long error");
         return -1;
     }
-    char message_size[SOCKET_MSG_DIGIT_NUM];
+    char message_size[SOCKET_MSG_DIGIT_NUM+1] = {'\0'};
     sprintf(message_size, "%06d", json_size);
     int write_fd = socket_fd;
     int write_size = writen(write_fd, message_size, SOCKET_MSG_DIGIT_NUM);
@@ -172,7 +156,7 @@ int send_json_string_to_socket(char* json_buffer, int socket_fd){
 
 // get a json string from pipe
 int get_json_string_from_pipe(char* json_buffer){
-    char message_size[PIPE_MSG_DIGIT_NUM];
+    char message_size[PIPE_MSG_DIGIT_NUM+1] = {'\0'};
     int read_fd = PIPE_FDS[0];
     int read_size = readn(read_fd, message_size, PIPE_MSG_DIGIT_NUM);
     if(read_size != PIPE_MSG_DIGIT_NUM){
@@ -196,7 +180,7 @@ int get_json_string_from_pipe(char* json_buffer){
         log_error("socket closed %d", read_fd);
         return -1;
     }
-
+    json_buffer[json_size] = '\0';
     return 0;
 }
 
@@ -207,7 +191,7 @@ int send_json_string_to_pipe(char* json_buffer){
         log_error("json size error");
         return -1;
     }
-    char message_size[PIPE_MSG_DIGIT_NUM];
+    char message_size[PIPE_MSG_DIGIT_NUM+1] = {'\0'};
     sprintf(message_size, "%04d", json_size);
     int write_fd = PIPE_FDS[1];
     int write_size = writen(write_fd, message_size, PIPE_MSG_DIGIT_NUM);
@@ -226,7 +210,7 @@ int send_json_string_to_pipe(char* json_buffer){
 
 // get a pending signal log from sig_pipe
 int get_a_signal_from_pipe(char* signal_buffer){
-    char message_size[SIG_MSG_BUFSIZE];
+    char message_size[SIG_MSG_DIGIT_NUM+1] = {'\0'};
     int read_fd = SIG_PIPE_FDS[0];
     int read_size = readn(read_fd, message_size, SIG_MSG_DIGIT_NUM);
     if(read_size != SIG_MSG_DIGIT_NUM){
@@ -251,6 +235,7 @@ int get_a_signal_from_pipe(char* signal_buffer){
         log_error("read size error");
         return -1;
     }
+    signal_buffer[signal_size] = '\0';
     return 0;
 }
 
@@ -261,7 +246,7 @@ int send_a_signal_to_pipe(char* signal_buffer){
         log_error("json size error");
         return -1;
     }
-    char message_size[PIPE_MSG_DIGIT_NUM];
+    char message_size[PIPE_MSG_DIGIT_NUM+1] = {'\0'};
     sprintf(message_size, "%02d", signal_size);
     int write_fd = SIG_PIPE_FDS[1];
     int write_size = writen(write_fd, message_size, SIG_MSG_DIGIT_NUM);
