@@ -101,8 +101,7 @@ buffer设计为4位length+最高1024位的消息体，注，消息中不含'\0'<
 &emsp;使用定时器容器，本项目实现了一个简单的timer_list，将超时处理，心跳检测等统一到timer tick时处理。<br>
 
 #### 线程安全
-&emsp;根据需求，只有3种类型的消息会在socket连接间传输，分别是：heartbeat, notify, file<br>
-鉴于消息种类少，在本项目设计中，让每个客户端保持与服务端3个socket连接，分别处理3种类型的消息，于是我们在服务器中维护一个全局pthread_mutex数组，每个锁对应一个服务端的fd，每次在socket_fd上进行IO操作时需要加上对应的锁，使得同一时间只有一个线程读写一个socket_fd，这也将减轻我们编写关闭连接代码的难度。<br>
+&emsp;根据需求，只有3种类型的消息会在socket连接间传输，分别是：heartbeat, notify, file。鉴于消息种类少，在本项目设计中，让每个客户端保持与服务端3个socket连接，分别处理3种类型的消息，于是我们在服务器中维护一个全局pthread_mutex数组，每个锁对应一个服务端的fd，每次在socket_fd上进行IO操作时需要加上对应的锁，**使得同一时间只有一个线程读写一个socket_fd**，这也将减轻我们编写关闭连接代码的难度。<br>
 <br>
 
 ###### :eyeglasses:怎样安全的关闭连接?<br>
@@ -113,7 +112,7 @@ buffer设计为4位length+最高1024位的消息体，注，消息中不含'\0'<
 
 &emsp;我的主要思路是，向目标线程发送SIGUSR1，打断其IO系统调用，项目中提供的如`get_json_from_socket`和`send_json_to_socket`封装了`readn`和`writen`函数，这两个函数又封装了read/write系统调用，当信号打断IO后，对IO的一层一层封装的上层函数需要像异常返回链一样像调用者返回错误。<br>
 
-&emsp;在目标线程执行SIGUSR1的handler中close socket，在`close(fd)`之前一定要再加上一个锁，这个锁避免了关闭的过程还没完全完成又有accept新连接把刚close掉的fd占用了。那问题又来了，这个锁该在哪里unlock呢，我们应该在关闭过程完全结束时unlock，那到底什么叫做“关闭过程完全结束”?简单说就是在线程池work_function返回的时候。<br>
+&emsp;在目标线程执行SIGUSR1的handler中close socket，在`close(fd)`之前一定要再加上一个锁，**这个锁避免了关闭的过程还没完全完成,又有accept新连接把刚close掉的fd占用了**。那问题又来了，这个锁该在哪里unlock呢，我们应该在关闭过程完全结束时unlock，那到底什么叫做“关闭过程完全结束”?简单说就是在线程池worker_function返回的时候。<br>
 以下通过部分代码阐述notify_fd的关闭逻辑：<br>
 在`close_client_connection`里先看closing flag有没有被设置，如果设置了则退出，将if和set为1这两步用互斥锁保护起来，作为原子操作。
 ``` C
