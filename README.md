@@ -153,7 +153,8 @@ pthread_mutex_unlock(&CLOSE_MUTEX[notify_fd]);
 
 ```
 <br>
-接下来是线程池worker_function
+接下来是线程池worker_function<br>
+
 ``` C
 // source/main
 
@@ -181,7 +182,7 @@ void notify_clients_wrapper(void* data){
 
     notify_clients();  //被wrapp的函数,内部有对socket fd的IO操作
     
-    SIG_CAUGHT_FLAG[socket_fd] = 1;  //为了确保不丢失信号，导致，ACCEPT_MUTEX死锁，详解看下图
+    SIG_CAUGHT_FLAG[socket_fd] = 1;  //为了确保不丢失信号，导致，ACCEPT_MUTEX死锁，详解看下文
 
     pthread_mutex_unlock(&ACCEPT_MUTEX); //解锁在close_on_SIGUSR1中加锁的，用于保证fd在关闭完成之前不会被新连接占用的互斥锁。
                                          //注意： 多次重复unlock不会导致严重问题，只会返回errno而已
