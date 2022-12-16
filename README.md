@@ -106,8 +106,8 @@ buffer设计为4位length+最高1024位的消息体，注，消息中不含'\0'<
 <br>
 
 ###### :eyeglasses:怎样安全的关闭连接?<br>
-本项目中只提供1个关闭连接的对外接口函数：`void close_client_connection(int heartbeat_fd);`，在这里我们以心跳fd代表一个在线客户端<br>
-整个项目中只有两处地方可能会调用该函数：心跳检测超时，主动向springboot发起logout请求,springboot通过管道通知客户端主动关闭了连接。这两个调用点都是在非socket IO线程中。
+&emsp;本项目中只提供1个用于关闭连接的对外接口函数：`void close_client_connection(int heartbeat_fd);`，在这里我们以心跳fd代表一个在线客户端<br>
+&emsp;整个项目中只有两处地方可能会调用该函数：心跳检测超时，主动向springboot发起logout请求,springboot通过管道通知客户端主动关闭了连接。这两个调用点都是在非socket IO线程中。
 <br>问题就来了，如何在一个线程中安全的关闭另一个可能正在读写的socket_fd？<br>
 
 
@@ -216,4 +216,6 @@ void close_on_SIGUSR1(int sig){
 }
 
 ```
-
+![](https://github.com/xiaoheng86/avo-chat-server/blob/main/readme/sigcaughtafterunlock.jpg)<br>
+如图所示，如果unlock ACCEPT_MUTEX之后信号才到来，会导致ACCEPT_MUTEX死锁。<br>
+&emsp;我的解决方案是，设置一个SIG_CAUGHT_FLAG，如果信号在SIG_CAUGHT_FLAG置为1之前信号到来，则在sighandler中对ACCEPT_MUTEX加锁，在之后信号到来则不加锁，因为没加锁，所以不管是否unlock都不会造成死锁这样的严重后果。
