@@ -154,7 +154,7 @@ pthread_mutex_unlock(&CLOSE_MUTEX[notify_fd]);
 ```
 <br>
 接下来是线程池worker_function
-```C
+``` C
 // source/main
 
 
@@ -213,8 +213,6 @@ void close_on_SIGUSR1(int sig){
         }
     }
 }
-
-
 
 ```
 
