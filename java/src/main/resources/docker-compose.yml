@@ -8,15 +8,15 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - :/var/lib/mysql
-      - :/etc/mysql/my.cnf
+      - /home/xiaoheng/Application/Persistence/MySQL/data:/var/lib/mysql
+      - /home/xiaoheng/Application/Persistence/MySQL/conf:/etc/mysql/my.cnf
     command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     environment:
       - TZ=Asia/Shanghai
-      - MYSQL_ROOT_PASSWORD=
-      - MYSQL_DATABASE=
-      - MYSQL_USER=
-      - MYSQL_PASSWORD=
+      - MYSQL_ROOT_PASSWORD=dfk8pxpe
+      - MYSQL_DATABASE=avo
+      - MYSQL_USER=xiaoheng
+      - MYSQL_PASSWORD=dfk8pxpe
 
   redis-server:
     restart: always
@@ -26,9 +26,9 @@ services:
     sysctls:
       - net.core.somaxconn=65535
     ports:
-      - "6379:6379"
+      - "6389:6379"
     volumes:
-      - :/data
-      - :/etc/redis.conf
+      - /home/xiaoheng/Application/Persistence/Redis/data:/data
+      - /home/xiaoheng/Application/Persistence/Redis/conf:/etc/redis.conf
 
 

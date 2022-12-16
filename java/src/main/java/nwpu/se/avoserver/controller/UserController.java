@@ -76,8 +76,8 @@ public class UserController {
         return new RegisterVO(userID);
     }
 
-    @GetMapping("/user/info")
-    public UserInfoVO getUserInfo(@RequestBody @Valid GetUserInfoParam getUserInfoParam) {
-
-    }
+//    @GetMapping("/user/info")
+//    public UserInfoVO getUserInfo(@RequestBody @Valid GetUserInfoParam getUserInfoParam) {
+//
+//    }
 }

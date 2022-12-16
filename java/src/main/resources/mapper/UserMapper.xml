@@ -12,6 +12,9 @@
             <result property="nickname" column="nickname" jdbcType="VARCHAR"/>
             <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
     </resultMap>
+    <insert id="insertUser">
+        INSERT INTO t_user(user_id, nickname, passwd, sex) VALUES (#{userId}, #{nickname}, #{password}, 1);
+    </insert>
 
 
     <select id="getUserById" resultMap="UserResultMap">

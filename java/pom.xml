@@ -13,9 +13,9 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>AVO-server</name>
     <description>AVO-server</description>
-    <properties>
+    <!-- <properties>
         <java.version>17</java.version>
-    </properties>
+    </properties> -->
     <dependencies>
 <!--        <dependency>-->
 <!--            <groupId>org.springframework.boot</groupId>-->
@@ -54,7 +54,8 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <optional>true</optional>
+            <version>1.18.24</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
