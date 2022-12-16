@@ -63,11 +63,18 @@ services:
 * 终端cd进入docker-compose.yml所在文件夹
 * 输入命令`sudo docker-compose up -d`，-d可以使其以daemon的身份运行，脱离终端。
 
-### 3.编译运行C程序
+### 3.打包java代码为jar包
+* 终端cd进入/java/
+* 运行`mvn clean package`，会生成/java/target/目录
+* 复制/java/target中的jar包的全路径[例如:AVO-server-0.0.1-SNAPSHOT.jar]
+* 修改配置文件中的SPRING_BOOT_JAR_PATH为对应全路径
+
+### 4.编译运行C程序
 * 终端cd进入/C/build/
 * `cmake .. -DIF_TEST="OFF"`，-DIF_TEST跳过测试代码编译，如果需要运行测试代码，请不加该选项。
 * `make`
 * `./server_protocol -p 5000 -d`,-p代表监听端口，默认为5000，-d代表以daemon运行
-注：参数和配置文件详细信息请参考下节。
+<br>C程序会自动fork并启动springboot server
+<br>注：参数和配置文件详细信息请参考下节。
 
 ## :pushpin:架构设计
