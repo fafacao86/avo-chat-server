@@ -74,7 +74,7 @@ services:
 * `cmake .. -DIF_TEST="OFF"`，-DIF_TEST跳过测试代码编译，如果需要运行测试代码，请不加该选项。
 * `make`
 * `./server_protocol -p 5000 -d`,-p代表监听端口，默认为5000，-d代表以daemon运行
-C程序会自动fork并启动springboot server
-注：参数和配置文件详细信息请参考下节。
+<br>C程序会自动fork并启动springboot server
+<br>注：参数和配置文件详细信息请参考下节。
 
 ## :pushpin:架构设计
