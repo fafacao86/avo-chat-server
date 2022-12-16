@@ -1,9 +1,11 @@
 package nwpu.se.avoserver.service.impl;
 
+import nwpu.se.avoserver.common.CommonUtil;
 import nwpu.se.avoserver.constant.ResultCodeEnum;
 import nwpu.se.avoserver.entity.User;
 import nwpu.se.avoserver.exception.BusinessException;
 import nwpu.se.avoserver.param.LoginParam;
+import nwpu.se.avoserver.param.RegisterParam;
 import nwpu.se.avoserver.service.UserService;
 import nwpu.se.avoserver.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,26 @@ public class UserServiceImpl implements UserService{
             }
         }catch (Exception e){
             throw new BusinessException(ResultCodeEnum.WRONG_ID_OR_PASSWORD, "ID或密码错误");
+        }
+    }
+
+    @Override
+    public int register(RegisterParam registerParam) {
+        try {
+            User user = new User();
+            user.setNickname(registerParam.getNickname());
+            user.setPassword(passwordEncoder.encode(registerParam.getPassword()));
+            int newUserID = CommonUtil.generateId();
+            int result = userMapper.insertUser(newUserID, user.getNickname(), user.getPassword());
+            if (result != 1) {
+                throw new BusinessException(ResultCodeEnum.INTERNAL_ERROR,"注册失败");
+            }
+            return newUserID;
+        }catch (BusinessException e){
+            throw e;
+        }
+        catch (Exception e){
+            throw new BusinessException(ResultCodeEnum.REPEAT_OPERATION, "用户已存在");
         }
     }
 }

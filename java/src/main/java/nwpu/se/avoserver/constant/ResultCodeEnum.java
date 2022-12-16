@@ -17,7 +17,13 @@ public enum ResultCodeEnum {
     /**
      * 重复操作
      */
-    REPEAT_OPERATION(10003, "重复操作");
+    REPEAT_OPERATION(10003, "重复操作"),
+
+    /**
+     * 服务器内部错误
+     * */
+    INTERNAL_ERROR(10004,"服务器内部错误");
+
 
     private final int code;
     private final String message;

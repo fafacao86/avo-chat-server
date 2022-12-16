@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @Component
 public class CommonUtil {
-    public static String generateId() {
+    public static int generateId() {
         String id = " ";
         while(true){
             UUID uuid = UUID.randomUUID();
@@ -28,7 +28,7 @@ public class CommonUtil {
                 break;
             }
         }
-       return id;
+       return Integer.parseInt(id);
     }
 
     public static int localDateTime2int(LocalDateTime localDateTime){

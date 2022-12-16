@@ -2,6 +2,7 @@ package nwpu.se.avoserver.service;
 
 import nwpu.se.avoserver.entity.User;
 import nwpu.se.avoserver.param.LoginParam;
+import nwpu.se.avoserver.param.RegisterParam;
 
 /**
 * @author xiaoheng
@@ -11,4 +12,6 @@ import nwpu.se.avoserver.param.LoginParam;
 public interface UserService {
 
     User login(LoginParam loginParam);
+
+    int register(RegisterParam registerParam);
 }

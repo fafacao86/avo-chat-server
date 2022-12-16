@@ -53,6 +53,10 @@ public class User implements Serializable, UserDetails {
         return passwd;
     }
 
+    public void setPassword(String password) {
+        this.passwd = password;
+    }
+
     @Override
     public String getUsername() {
         return nickname;
