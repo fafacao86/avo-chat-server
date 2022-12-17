@@ -104,15 +104,15 @@ buffer设计为4位length+最高1024位的消息体，注，消息中不含'\0'<
 &emsp;根据需求，只有3种类型的消息会在socket连接间传输，分别是：heartbeat, notify, file。鉴于消息种类少，在本项目设计中，让每个客户端保持与服务端3个socket连接，分别处理3种类型的消息，于是我们在服务器中维护一个全局pthread_mutex数组，每个锁对应一个服务端的fd，每次在socket_fd上进行IO操作时需要加上对应的锁，**使得同一时间只有一个线程读写一个socket_fd**，这也将减轻我们编写关闭连接代码的难度。<br>
 <br>
 
-###### :eyeglasses:怎样安全的关闭连接?<br>
+##### 怎样安全的关闭连接?<br>
 &emsp;本项目中只提供1个用于关闭连接的对外接口函数：`void close_client_connection(int heartbeat_fd);`，在这里我们以心跳fd代表一个在线客户端<br>
-&emsp;整个项目中只有两处地方可能会调用该函数：心跳检测超时，主动向springboot发起logout请求,springboot通过管道通知客户端主动关闭了连接。这两个调用点都是在非socket IO线程中。
-<br>问题就来了，如何在一个线程中安全的关闭另一个可能正在读写的socket_fd？<br>
+&emsp;整个项目中只有两处地方可能会调用该函数：一处是心跳检测超时。另一处是客户端主动向springboot发起logout请求,springboot通过管道通知客户端主动关闭了连接。这两个调用点都是在非socket IO线程中。
+<br>问题就来了，如何在一个非socket IO线程中安全地关闭另一个线程可能正在读写的socket_fd？<br>
 
 
-&emsp;我的主要思路是，向目标线程发送SIGUSR1，打断其IO系统调用，项目中提供的如`get_json_from_socket`和`send_json_to_socket`封装了`readn`和`writen`函数，这两个函数又封装了read/write系统调用，当信号打断IO后，对IO的一层一层封装的上层函数需要像异常返回链一样像调用者返回错误。<br>
+&emsp;我的主要思路是，向目标线程发送SIGUSR1，打断其IO系统调用，项目中提供的如`get_json_from_socket`和`send_json_to_socket`封装了`readn`和`writen`函数，这两个函数又封装了`read`/`write`系统调用，当信号打断IO后，对IO的一层一层封装的上层函数需要像异常返回链一样向调用者返回错误，及时return。<br>
 
-&emsp;在目标线程执行SIGUSR1的handler中close socket，在`close(fd)`之前一定要再加上一个锁，**这个锁避免了关闭的过程还没完全完成,又有accept新连接把刚close掉的fd占用了**。那问题又来了，这个锁该在哪里unlock呢，我们应该在关闭过程完全结束时unlock，那到底什么叫做“关闭过程完全结束”?简单说就是在线程池worker_function返回的时候。<br>
+&emsp;在目标线程执行SIGUSR1的handler中close socket，也就是把close fd这个操作交由socket IO线程自己进行，在`close(fd)`之前一定要再加上一个锁，**这个锁避免了关闭的过程还没完全完成,又有accept新连接把刚close掉的fd占用了**。那问题又来了，这个锁该在哪里unlock呢，我们应该在关闭过程完全结束时unlock，那到底什么叫做“关闭过程完全结束”?简单说就是在线程池worker_function返回的时候。<br>
 以下通过部分代码阐述notify_fd的关闭逻辑：<br>
 在`close_client_connection`里先看closing flag有没有被设置，如果设置了则退出，将if和set为1这两步用互斥锁保护起来，作为原子操作。
 ``` C
