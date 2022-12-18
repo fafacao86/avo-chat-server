@@ -126,17 +126,18 @@ buffer设计为4位length+最高1024位的消息体，注，消息中不含'\0'<
 */
 pthread_mutex_lock(&CLOSE_MUTEX[heartbeat_fd]);
 if (CLOSE_FLAGS[heartbeat_fd].closing == 1){
-pthread_mutex_unlock(&CLOSE_MUTEX[heartbeat_fd]);
-return;
+  pthread_mutex_unlock(&CLOSE_MUTEX[heartbeat_fd]);
+  return;
 }
 CLOSE_FLAGS[heartbeat_fd].closing = 1;
 pthread_mutex_unlock(&CLOSE_MUTEX[heartbeat_fd]);
-//这一步保证了，直到线程池的worker_function返回只有一个closing过程，也就是说我们关闭过程中不用考虑并发。What a relief!
+//以上步骤保证了直到线程池的worker_function返回只有一个closing过程，也就是说我们关闭过程中不用考虑并发。What a relief!
 
 
 
 /**
-* 省略部分代码，客户端一连接会在redis里维护一个hash，可以借助redis，通过heartbeat_fd获取到同一客户端的notify_fd与file_fd。需要一并关闭。
+* 省略部分代码，客户端一连接会在redis里维护一个hash。
+* 可以借助redis，通过heartbeat_fd获取到同一客户端的notify_fd与file_fd。需要一并关闭。
 */
 
 pthread_mutex_lock(&CLOSE_MUTEX[notify_fd]);  //加锁保护CLOSE_FLAG
@@ -146,7 +147,8 @@ if (CLOSE_FLAGS[notify_fd].tid == -1){  //如果没有worker_thread在对fd进�
     event_loop_del(EVENT_LOOP, notify_fd);  //移除epoll监听
 }else{
     CLOSE_FLAGS[notify_fd].closing = 1;
-    close_socket(notify_fd);  //如果有线程在对fd进行IO，则调用static函数close_socket()，向目标线程发信号，让目标线程自己close socket fd
+     //如果有线程在对fd进行IO，则调用static函数close_socket()，向目标线程发信号，让目标线程自己close socket fd
+    close_socket(notify_fd); 
 }
 pthread_mutex_unlock(&CLOSE_MUTEX[notify_fd]);
 
@@ -165,31 +167,38 @@ pthread_mutex_unlock(&CLOSE_MUTEX[notify_fd]);
 void notify_clients_wrapper(void* data){
     int socket_fd = (int)data;
     SIG_CAUGHT_FLAG[socket_fd] = 0; 
-    
-    pthread_mutex_lock(&FD_MUTEX_ARRAY[socket_fd]); //这个锁是为了使同一时刻只有一个线程对一个fd进行IO
-
-    pthread_mutex_lock(&CLOSE_MUTEX[socket_fd]); //这个锁是为了保护CLOSE_FLAG，此处可能与close_client_connection中判断是否有线程在读写socket fd存在竞争。
-    if(CLOSE_FLAGS[socket_fd].closing == 1){   //如果在执行notify_clients之前，已经要求关闭连接，则直接返回
+    //这个锁是为了使同一时刻只有一个线程对一个fd进行IO
+    pthread_mutex_lock(&FD_MUTEX_ARRAY[socket_fd]); 
+    //这个锁是为了保护CLOSE_FLAG，此处可能与close_client_connection中判断是否有线程在读写socket fd存在竞争。
+    pthread_mutex_lock(&CLOSE_MUTEX[socket_fd]); 
+    //如果在执行notify_clients之前，已经要求关闭连接，则直接返回
+    if(CLOSE_FLAGS[socket_fd].closing == 1){   
         pthread_mutex_unlock(&CLOSE_MUTEX[socket_fd]);
         pthread_mutex_unlock(&FD_MUTEX_ARRAY[socket_fd]);
         pthread_mutex_unlock(&FD_MUTEX_ARRAY[SIG_PIPE_FDS[0]]);
         return;
     }else{
-        CLOSE_FLAGS[socket_fd].tid = pthread_self();  //如果在执行notify_clients之前没有要求关闭连接，则将tid设置为当前thread_id，接着正常执行notify_clients即可
+       //如果在执行notify_clients之前没有要求关闭连接，则将tid设置为当前thread_id，接着正常执行notify_clients即可
+        CLOSE_FLAGS[socket_fd].tid = pthread_self();  
     }
     pthread_mutex_unlock(&CLOSE_MUTEX[socket_fd]);
 
-    notify_clients();  //被wrapp的函数,内部有对socket fd的IO操作
-    
-    SIG_CAUGHT_FLAG[socket_fd] = 1;  //为了确保不丢失信号，导致，ACCEPT_MUTEX死锁，详解看下文
+    //被wrapp的函数,内部有对socket fd的IO操作
+    notify_clients();  
+    //为了确保不丢失信号，导致，ACCEPT_MUTEX死锁，详解看下文
+    SIG_CAUGHT_FLAG[socket_fd] = 1;  
 
-    pthread_mutex_unlock(&ACCEPT_MUTEX); //解锁在close_on_SIGUSR1中加锁的，用于保证fd在关闭完成之前不会被新连接占用的互斥锁。
-                                         //注意： 多次重复unlock不会导致严重问题，只会返回errno而已
+    //解锁在close_on_SIGUSR1中加锁的，用于保证fd在关闭完成之前不会被新连接占用的互斥锁。
+    //注意： 多次重复unlock不会导致严重问题，只会返回errno而已
+    pthread_mutex_unlock(&ACCEPT_MUTEX); 
+                                         
     pthread_mutex_unlock(&FD_MUTEX_ARRAY[socket_fd]);
 
     pthread_mutex_lock(&CLOSE_MUTEX[socket_fd]);
-    if(CLOSE_FLAGS[socket_fd].closing == 1){ //如果正在进行关闭过程，且本该在close_on_SIGUSR1信号处理函数中设置的SIG_HANDLED_FLAG未被设置。
-        while(SIG_HANDLED_FLAG[socket_fd] != 1){  //为了防止信号在传递到当前线程之前函数已经返回，即如果信号处理函数没触发则等待5秒，信号如果在此时到来会自动打断sleep。
+    //如果正在进行关闭过程，且本该在close_on_SIGUSR1信号处理函数中设置的SIG_HANDLED_FLAG未被设置。
+    if(CLOSE_FLAGS[socket_fd].closing == 1){ 
+        //为了防止信号在传递到当前线程之前函数已经返回，即如果信号处理函数没触发则等待5秒，信号如果在此时到来会自动打断sleep。
+        while(SIG_HANDLED_FLAG[socket_fd] != 1){  
             sleep(5);
         }
         CLOSE_FLAGS[socket_fd].tid = -1;
@@ -206,7 +215,8 @@ void close_on_SIGUSR1(int sig){
     int i;
     for(i = 0; i < EVENT_MAX; i++){
         if(CLOSE_FLAGS[i].tid == pthread_self()){
-            if(SIG_CAUGHT_FLAG[i] != 1) //如果信号在SIG_CAUGHT_FLAG被设置前触发，则加上锁，在之后触发就不加锁。
+            //如果信号在SIG_CAUGHT_FLAG被设置前触发，则加上锁，在之后触发就不加锁。
+            if(SIG_CAUGHT_FLAG[i] != 1) 
                 pthread_mutex_lock(&ACCEPT_MUTEX);
             close(i);
             SIG_HANDLED_FLAG[i] = 1;
@@ -218,3 +228,11 @@ void close_on_SIGUSR1(int sig){
 ![](https://github.com/xiaoheng86/avo-chat-server/blob/main/readme/sigcaughtafterunlock.jpg)<br>
 如图所示，如果unlock ACCEPT_MUTEX之后信号才到来，会导致ACCEPT_MUTEX死锁。<br>
 &emsp;我的解决方案是，设置一个SIG_CAUGHT_FLAG，如果信号在SIG_CAUGHT_FLAG置为1之前信号到来，则在sighandler中对ACCEPT_MUTEX加锁，在之后信号到来则不加锁，因为没加锁，所以不管是否unlock都不会造成死锁这样的严重后果。
+
+
+
+## :pushpin:开源资源
+**hiredis**:&emsp;[Minimalistic C client for Redis](https://github.com/redis/hiredis)<br>
+**cJSON**:&emsp;[Ultralightweight JSON parser in ANSI C](https://github.com/DaveGamble/cJSON)<br>
+**C Thread Pool**:&emsp;[A minimal but powerful thread pool in ANSI C](https://github.com/Pithikos/C-Thread-Pool)<br>
+**log.c**:&emsp;[A simple logging library implemented in C99](https://github.com/rxi/log.c)&nbsp;我在此日志库基础上添加了with_errno的功能。
