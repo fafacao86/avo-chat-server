@@ -127,13 +127,13 @@ int connect_to_client(int listen_fd, int* type){
     log_trace("token: %s fd: %d, type: %d", token, connfd, *type);
     redisReply* reply;
     pthread_mutex_lock(&REDIS_MUTEX);
-    reply = redisCommand(REDIS_CONTEXT, "HEXISTS '%s'", token);
+    reply = redisCommand(REDIS_CONTEXT, "HEXISTS %s", token);
     if (reply->type == REDIS_REPLY_NIL){
         close(connfd);
         return 0;
     }
 
-    reply = redisCommand(REDIS_CONTEXT, "HSET '%s' %d %d", token, *type, connfd);
+    reply = redisCommand(REDIS_CONTEXT, "HSET %s %d %d", token, *type, connfd);
     log_trace("HSET '%s' %d %d", token, *type, connfd);
     if (reply == NULL) {
         log_fatal("redis command failed");
@@ -152,7 +152,7 @@ int connect_to_client(int listen_fd, int* type){
     }
 
 
-    reply = redisCommand(REDIS_CONTEXT, "EXPIRE '%s' %d", token, TOKEN_EXPIRE_TIME);
+    reply = redisCommand(REDIS_CONTEXT, "EXPIRE %s %d", token, TOKEN_EXPIRE_TIME);
     freeReplyObject(reply);
 
     pthread_mutex_unlock(&REDIS_MUTEX);
@@ -179,7 +179,7 @@ static void close_socket(int fd){
     CLOSE_FLAGS[fd].closing = 1;
     CLOSE_FLAGS[fd].flag = 1;
     pthread_mutex_lock(&REDIS_MUTEX);
-    redisReply * reply = redisCommand(REDIS_CONTEXT, "HDEL '%s' %d", CLOSE_FLAGS[fd].token, CLOSE_FLAGS[fd].type);
+    redisReply * reply = redisCommand(REDIS_CONTEXT, "HDEL %s %d", CLOSE_FLAGS[fd].token, CLOSE_FLAGS[fd].type);
     pthread_mutex_unlock(&REDIS_MUTEX);
     freeReplyObject(reply);
     pthread_kill(CLOSE_FLAGS[fd].tid, SIGUSR1);
@@ -201,7 +201,7 @@ void close_client_connection(int heartbeat_fd){
     const char* token =  CLOSE_FLAGS[heartbeat_fd].token;
     redisReply * reply;
     pthread_mutex_lock(&REDIS_MUTEX);
-    reply = redisCommand(REDIS_CONTEXT,"HGET '%s' %d", token, T_NOTIFY);
+    reply = redisCommand(REDIS_CONTEXT,"HGET %s %d", token, T_NOTIFY);
     if(reply->type == REDIS_REPLY_NIL)
         log_error("redis command: HGET %s %d returns nil! The target client is not online", token, T_NOTIFY);
     if(reply->type == REDIS_REPLY_INTEGER)
@@ -210,7 +210,7 @@ void close_client_connection(int heartbeat_fd){
         notify_fd = -1;
     freeReplyObject(reply);
 
-    reply = redisCommand(REDIS_CONTEXT,"HGET '%s' %d", token, T_FILE);
+    reply = redisCommand(REDIS_CONTEXT,"HGET %s %d", token, T_FILE);
     if(reply->type == REDIS_REPLY_NIL)
         log_error("redis command: HGET %s %d returns nil! The target client is not online", token, T_NOTIFY);
     if(reply->type == REDIS_REPLY_INTEGER)
@@ -244,17 +244,17 @@ void close_client_connection(int heartbeat_fd){
     }
 
     if (file_fd != -1 && notify_fd != -1){
-        reply = redisCommand(REDIS_CONTEXT, "HDEL '%s' %d", CLOSE_FLAGS[file_fd].token, CLOSE_FLAGS[file_fd].type);
+        reply = redisCommand(REDIS_CONTEXT, "HDEL %s %d", CLOSE_FLAGS[file_fd].token, CLOSE_FLAGS[file_fd].type);
         freeReplyObject(reply);
-        reply = redisCommand(REDIS_CONTEXT, "HDEL '%s' %d", CLOSE_FLAGS[notify_fd].token, CLOSE_FLAGS[notify_fd].type);
+        reply = redisCommand(REDIS_CONTEXT, "HDEL %s %d", CLOSE_FLAGS[notify_fd].token, CLOSE_FLAGS[notify_fd].type);
         freeReplyObject(reply);
     }
 
-    reply = redisCommand(REDIS_CONTEXT, "HDEL '%s' %d", token, heartbeat_fd);
+    reply = redisCommand(REDIS_CONTEXT, "HDEL %s %d", token, heartbeat_fd);
     freeReplyObject(reply);
     reply = redisCommand(REDIS_CONTEXT, "SREM online_users_fd %d", heartbeat_fd);
     freeReplyObject(reply);
-    reply = redisCommand(REDIS_CONTEXT, "DEL '%s'", token);
+    reply = redisCommand(REDIS_CONTEXT, "DEL %s", token);
     freeReplyObject(reply);
     pthread_mutex_unlock(&REDIS_MUTEX);
 }

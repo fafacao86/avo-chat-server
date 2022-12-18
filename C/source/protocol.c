@@ -23,7 +23,7 @@ static void timeout_callback_adapter(void * fd){
 
 static inline int check_token(const char* token, int fd){
     pthread_mutex_lock(&REDIS_MUTEX);
-    redisReply *reply = redisCommand(REDIS_CONTEXT, "HEXISTS '%s'", CLOSE_FLAGS[fd].token);
+    redisReply *reply = redisCommand(REDIS_CONTEXT, "HEXISTS %s", CLOSE_FLAGS[fd].token);
     if (reply->type == REDIS_REPLY_NIL){
         log_error("redis command: HEXISTS %s token returns nil! The target client is not online", CLOSE_FLAGS[fd].token);
         pthread_mutex_unlock(&REDIS_MUTEX);
@@ -35,7 +35,7 @@ static inline int check_token(const char* token, int fd){
         return 0;
 
     }
-    redisCommand(REDIS_CONTEXT, "EXPIRE '%s' %d", CLOSE_FLAGS[fd].token, TOKEN_EXPIRE_TIME);
+    redisCommand(REDIS_CONTEXT, "EXPIRE %s %d", CLOSE_FLAGS[fd].token, TOKEN_EXPIRE_TIME);
     pthread_mutex_unlock(&REDIS_MUTEX);
     return 1;
 }
@@ -141,16 +141,16 @@ void notify_clients(){
         char target_token[2048];
         strcpy(target_token, reply->str);
         freeReplyObject(reply);
-        reply = redisCommand(REDIS_CONTEXT, "HGET '%s' %d", target_token, T_NOTIFY);
-        log_trace("NOTIFY fd: %d", reply->integer);
+        reply = redisCommand(REDIS_CONTEXT, "HGET %s %d", target_token, T_NOTIFY);
         if (reply->type == REDIS_REPLY_NIL) {
             log_error("redis command: HGET %s %d returns nil! The target client is not online", target_token, T_NOTIFY);
             pthread_mutex_unlock(&REDIS_MUTEX);
             freeReplyObject(reply);
             return;
         }
-        if (reply->type == REDIS_REPLY_INTEGER) {
-            int target_fd = (int) reply->integer;
+        if (reply->type == REDIS_REPLY_STRING) {
+            int target_fd = (int)atoi(reply->str);
+            log_trace("target fd: %d", target_fd);
             result = send_json_string_to_socket(json_buffer, target_fd);
             if (result == -1) {
                 log_error("send notify to fd: %d failed", target_fd);
@@ -174,7 +174,7 @@ void notify_clients(){
                 if(reply->type == REDIS_REPLY_STRING){
                     strcpy(target_token, reply->str);
                     freeReplyObject(reply);
-                    reply = redisCommand(REDIS_CONTEXT, "HGET '%s' %d", target_token, T_NOTIFY);
+                    reply = redisCommand(REDIS_CONTEXT, "HGET %s %d", target_token, T_NOTIFY);
                     if (reply->type == REDIS_REPLY_INTEGER){
                         int target_fd = (int) reply->integer;
                         create_notify_json(puller, notify->pull_target,json_buffer, SOCKET_BUFSIZE);

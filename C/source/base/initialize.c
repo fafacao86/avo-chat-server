@@ -97,7 +97,6 @@ void init_springboot_server(){
         sprintf(pipe_fd, "%d", PIPE_FDS[1]);
         close(PIPE_FDS[0]);
         execlp("java", "java", "-jar", SPRING_BOOT_JAR_PATH, pid_str, pipe_fd, NULL);
-
         perror("execlp");
     }else{
         return;
@@ -132,7 +131,6 @@ void init_signal_handle()
  * **/
 redisContext* connect_to_redis(){
     redisContext *c;
-    redisReply *reply;
     char *hostname = "127.0.0.1";
     int port = 6389;
     struct timeval timeout = { 2, 500000 }; // 2.5 seconds

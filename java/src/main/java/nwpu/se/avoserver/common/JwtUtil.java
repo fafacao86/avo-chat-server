@@ -24,7 +24,7 @@ public class JwtUtil {
     public String secret;
 
 
-    public static String PREFIX = "Bearer";
+    public static String PREFIX = "Bearer_";
 
     /**
      * 根据user信息生成token

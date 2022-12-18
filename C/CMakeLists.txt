@@ -53,7 +53,6 @@ target_link_libraries(server_protocol pthread cJSON hiredis)
 
 
 
-
 # compiling redis_test
 add_executable(redis_test test/hiredis_test.c ${SRC} )
 
