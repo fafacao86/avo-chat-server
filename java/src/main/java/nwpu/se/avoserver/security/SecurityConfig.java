@@ -49,6 +49,7 @@ public class SecurityConfig {
         http.authorizeRequests().antMatchers(
                         "/user/login",
                         "/user/register",
+                        "/test/notifyP2P",
                         "/actuator/**"
                 ).permitAll()
                 .anyRequest().authenticated();

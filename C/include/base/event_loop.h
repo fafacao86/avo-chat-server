@@ -25,6 +25,5 @@ int event_loop_del(struct event_loop *loop, int fd);
 
 int event_loop_wait(struct event_loop *loop, int timeout);
 
-struct epoll_event* event_loop_get_events(struct event_loop *loop);
-
+int rearm_oneshot_fd(struct event_loop *loop, int fd, int type);
 #endif

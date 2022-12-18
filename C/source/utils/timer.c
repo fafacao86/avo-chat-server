@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include "base/thpool.h"
 #include "global.h"
+#include "log.h"
 
 void init_sort_timer_list(struct sort_timer_list **list){
     *list = malloc(sizeof(struct sort_timer_list));
@@ -67,6 +68,13 @@ void add_timer(struct sort_timer_list* list, struct timer* timer){
         timer->next = list->head;
         list->head->prev = timer;
         list->head = timer;
+        return;
+    }
+    //if timer is the biggest timer
+    if(timer->expire > list->tail->expire){
+        list->tail->next = timer;
+        timer->prev = list->tail;
+        list->tail = timer;
         return;
     }
     add_timer_helper(list, timer, list->head);
@@ -140,11 +148,7 @@ void tick(struct sort_timer_list *list){
             break;
         }
         thpool_add_work(THREADING_POLL_P, tmp->callback, tmp->callback_parameter);
-        list->head = tmp->next;
-        if(list->head){
-            list->head->prev = NULL;
-        }
-        free(tmp);
-        tmp = list->head;
+
+        tmp = tmp->next;
     }
 }

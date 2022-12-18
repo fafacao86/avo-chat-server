@@ -196,7 +196,7 @@ void parse_notify_msg(const char* msg, struct notify_item * notify_msg_buffer){
 }
 
 
-void create_notify_json(int type, char* puller, char* pull_target,char* json_buffer, int json_buffer_size){
+void create_notify_json(char* puller, char* pull_target,char* json_buffer, int json_buffer_size){
     pthread_mutex_lock(&CJSON_MUTEX);
     cJSON* notify_cJSON = NULL;
     notify_cJSON =cJSON_CreateObject();
@@ -210,6 +210,7 @@ void create_notify_json(int type, char* puller, char* pull_target,char* json_buf
     char* json = cJSON_Print(notify_cJSON);
     strncpy(json_buffer, json, json_buffer_size);
     free(json);
+    cJSON_Delete(notify_cJSON);
     pthread_mutex_unlock(&CJSON_MUTEX);
 }
 
@@ -257,7 +258,7 @@ void create_heartbeat_request_json(char* json_buffer){
     strncpy(json_buffer, json, SOCKET_BUFSIZE);
     free(json);
     pthread_mutex_unlock(&CJSON_MUTEX);
-
+    cJSON_Delete(heartbeat_cJSON);
 }
 
 

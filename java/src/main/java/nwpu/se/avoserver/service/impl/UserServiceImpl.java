@@ -29,14 +29,14 @@ public class UserServiceImpl implements UserService{
     @Override
     public User login(LoginParam loginParam) {
         try {
-            User user = userMapper.getUserById(loginParam.getID());
+            User user = userMapper.getUserById(Integer.parseInt(loginParam.getUserID()));
             if(passwordEncoder.matches(loginParam.getPassword(), user.getPassword())){
                 return user;
             }else{
                 throw new RuntimeException("密码错误");
             }
         }catch (Exception e){
-            throw new BusinessException(ResultCodeEnum.WRONG_ID_OR_PASSWORD, "ID或密码错误");
+            throw new BusinessException(ResultCodeEnum.WRONG_ID_OR_PASSWORD, "ID或密码错误"+e.toString());
         }
     }
 
@@ -56,7 +56,7 @@ public class UserServiceImpl implements UserService{
             throw e;
         }
         catch (Exception e){
-            throw new BusinessException(ResultCodeEnum.REPEAT_OPERATION, "用户已存在");
+            throw new BusinessException(ResultCodeEnum.REPEAT_OPERATION, e.getMessage());
         }
     }
 }

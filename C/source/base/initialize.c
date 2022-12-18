@@ -77,26 +77,30 @@ void assert_single_instance(){
 void init_springboot_server(){
     // 初始化springboot服务器
 
-    char buf[BUFSIZ];
     /** Generates two pipe file descriptors **/
     pipe(PIPE_FDS);
 
     /** run spring boot server **/
     if (!fork()) {
         /**close parent process's log file, open new log file for springboot**/
+        char pid_str[64];
+        char pipe_fd[16];
         close(0);
         close(1);
         close(2);
         open("/dev/null", O_RDONLY);
-        open(SPRING_BOOT_JAR_PATH, O_WRONLY | O_CREAT | O_APPEND, 0644);
-        open(SPRING_BOOT_JAR_PATH, O_WRONLY | O_CREAT | O_APPEND, 0644);
+        open(JAVA_LOG_PATH, O_WRONLY | O_CREAT | O_APPEND, 0644);
+        open(JAVA_LOG_PATH, O_WRONLY | O_CREAT | O_APPEND, 0644);
+        pid_t pid = getpid();
+        CHILD_PID = pid;
+        sprintf(pid_str, "%d", pid);
+        sprintf(pipe_fd, "%d", PIPE_FDS[1]);
         close(PIPE_FDS[0]);
+        execlp("java", "java", "-jar", SPRING_BOOT_JAR_PATH, pid_str, pipe_fd, NULL);
+
+        perror("execlp");
     }else{
-        close(PIPE_FDS[1]);
-        printf("PARENT: reading from pipe\n");
-        read(PIPE_FDS[0], buf, BUFSIZ);
-        printf("PARENT: read \"%s\"\n", buf);
-        wait(NULL);
+        return;
     }
 }
 

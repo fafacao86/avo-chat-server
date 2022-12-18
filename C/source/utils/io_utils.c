@@ -32,7 +32,7 @@ int readn(int fd, void *vptr, int n)
     while (nleft > 0) {
         if ( (nread = (int)read(fd, ptr, nleft)) < 0) {
             if (errno == EINTR) {
-                nread  = 0;
+                return 0;
             }/* and call read() again */
         } else if (nread == 0){
             log_error("client closed the connection actively, fd: %d", fd);
@@ -58,7 +58,7 @@ int writen(int fd, const void *vptr, int n)
     while (nleft > 0) {
         if ( (nwritten = write(fd, ptr, nleft)) <= 0) {
             if (nwritten < 0&& errno == EINTR){
-                nwritten = 0;
+                return 0;
             }/* and call write() again */
             else{
                 log_error_with_errno("writen error");
@@ -103,20 +103,18 @@ int get_json_string_from_socket(char* json_buffer, int socket_fd){
     char message_size[SOCKET_MSG_DIGIT_NUM+1] = {'\0'};
     int read_fd = socket_fd;
     int read_size = readn(read_fd, message_size, SOCKET_MSG_DIGIT_NUM);
-    if(read_size != SOCKET_MSG_DIGIT_NUM){
-        log_error("read size error");
-        return -1;
-    }else if (read_size == 0){
+    if(read_size == 0){
         log_error("socket closed %d", read_fd);
         return -1;
+    }else if(read_size != SOCKET_MSG_DIGIT_NUM){
+        log_error("read size error");
+        return -1;
     }
-
     int json_size = atoi(message_size);
     if(json_size > SOCKET_BUFSIZE){
         log_error("json size error");
         return -1;
     }
-    log_info("json size %d", json_size);
     read_size = readn(read_fd, json_buffer, json_size);
     if(read_size != json_size){
         log_error("read size error");
@@ -159,14 +157,13 @@ int get_json_string_from_pipe(char* json_buffer){
     char message_size[PIPE_MSG_DIGIT_NUM+1] = {'\0'};
     int read_fd = PIPE_FDS[0];
     int read_size = readn(read_fd, message_size, PIPE_MSG_DIGIT_NUM);
-    if(read_size != PIPE_MSG_DIGIT_NUM){
-        log_error("read size error");
-        return -1;
-    }else if (read_size == 0){
+    if (read_size == 0){
         log_error("socket closed %d", read_fd);
         return -1;
+    }else if(read_size != PIPE_MSG_DIGIT_NUM){
+        log_error("read size error");
+        return -1;
     }
-
     int json_size = atoi(message_size);
     if(json_size > PIPE_MSG_BUFSIZE){
         log_error("json size error");
@@ -213,11 +210,11 @@ int get_a_signal_from_pipe(char* signal_buffer){
     char message_size[SIG_MSG_DIGIT_NUM+1] = {'\0'};
     int read_fd = SIG_PIPE_FDS[0];
     int read_size = readn(read_fd, message_size, SIG_MSG_DIGIT_NUM);
-    if(read_size != SIG_MSG_DIGIT_NUM){
-        log_error("read size error");
-        return -1;
-    }else if (read_size == 0){
+    if (read_size == 0){
         log_error("socket closed %d", read_fd);
+        return -1;
+    }else if(read_size != SIG_MSG_DIGIT_NUM){
+        log_error("read size error");
         return -1;
     }
 

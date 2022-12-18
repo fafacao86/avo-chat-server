@@ -23,6 +23,8 @@ void signal_handle_sigint(int signal){
         log_debug("signal_handle_sigint, ignore SIGINT");
     }else{
         log_warn("SIGINT caught, exiting...");
+        log_info("Closing child process...");
+        kill(CHILD_PID, SIGINT);
         exit(0);
     }
 }
@@ -32,6 +34,8 @@ void signal_handle_sigterm(int signal){
         log_debug("signal_handle_sigterm, ignore SIGTERM");
     }else{
         log_warn("SIGTERM caught, exiting...");
+        log_info("Closing child process...");
+        kill(CHILD_PID, SIGINT);
         exit(0);
     }
 }
@@ -57,7 +61,7 @@ void signal_handle_sigchld(int signal){
     int exit_flag;
     int     stat;
     while ( (pid = waitpid(-1, &stat, WNOHANG)) > 0) {
-        log_error("child pid:%d terminated unexpectedly\n", pid);
+        log_error("child pid:%d terminated unexpectedly", pid);
         log_debug("shutdown server...");
         exit_flag = 1;
     }

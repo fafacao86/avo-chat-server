@@ -5,9 +5,6 @@ package nwpu.se.avoserver.protocol;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import nwpu.se.avoserver.common.RedisUtil;
-import org.springframework.boot.autoconfigure.cache.CacheProperties;
-import org.springframework.boot.context.properties.bind.validation.ValidationBindHandler;
-import org.springframework.context.annotation.Bean;
 
 import java.io.FileOutputStream;
 
@@ -26,15 +23,15 @@ public class PipeOutputBean {
     public PipeOutputBean() {
     }
 
-    public Boolean notifyP2P(int puller, int pull_target){
+    public Boolean notifyP2P(Integer puller, Integer pull_target){
         try{
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("type", "p2p");
-            jsonObject.put("puller", puller);
-            jsonObject.put("pull_target", pull_target);
+            jsonObject.put("type", 1); // 1表示p2p，对应T_P2P
+            jsonObject.put("puller", puller.toString());
+            jsonObject.put("pull_target", pull_target.toString());
             int jsonLength = jsonObject.toJSONString().length();
             String jsonLengthString = String.format("%04d", jsonLength);
-            String json = jsonLengthString + jsonObject.toJSONString();
+            String json = "0"+jsonLengthString + jsonObject.toJSONString();
             pipeOutput.write(json.getBytes());
             pipeOutput.flush();
             return true;

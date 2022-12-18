@@ -14,9 +14,9 @@ struct close_flag{
 
 char* CONFIG_PATH = "/etc/avo/avo.conf";
 char* LOG_PATH = "/var/log/avo/avo.log";
-char* JAVA_LOG_PATH = "/var/log/avo/springboot_server.log";
+char* JAVA_LOG_PATH = "/home/xiaoheng/Desktop/test/avo.log";
 char* LOCK_PATH = "/var/run/avo.pid";
-char* SPRING_BOOT_JAR_PATH = "";
+char* SPRING_BOOT_JAR_PATH = "/home/xiaoheng/Desktop/projects/java_projects/AVO-server/target/AVO-server-0.0.1-SNAPSHOT.jar";
 pthread_mutex_t LOG_MUTEX = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t REDIS_MUTEX = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t CJSON_MUTEX = PTHREAD_MUTEX_INITIALIZER;
@@ -36,3 +36,6 @@ struct close_flag CLOSE_FLAGS[EVENT_MAX];
 struct sort_timer_list* TIMER_LIST = NULL;
 int TOKEN_EXPIRE_TIME = 259200;
 struct timer* HEARTBEAT_TIMER;
+int SIG_CAUGHT_FLAG[EVENT_MAX] = {0};
+int SIG_HANDLED_FLAG[EVENT_MAX] = {0};
+pid_t CHILD_PID;

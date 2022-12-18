@@ -23,7 +23,7 @@ static void timeout_callback_adapter(void * fd){
 
 static inline int check_token(const char* token, int fd){
     pthread_mutex_lock(&REDIS_MUTEX);
-    redisReply *reply = redisCommand(REDIS_CONTEXT, "HEXISTS %s", CLOSE_FLAGS[fd].token);
+    redisReply *reply = redisCommand(REDIS_CONTEXT, "HEXISTS '%s'", CLOSE_FLAGS[fd].token);
     if (reply->type == REDIS_REPLY_NIL){
         log_error("redis command: HEXISTS %s token returns nil! The target client is not online", CLOSE_FLAGS[fd].token);
         pthread_mutex_unlock(&REDIS_MUTEX);
@@ -35,7 +35,7 @@ static inline int check_token(const char* token, int fd){
         return 0;
 
     }
-    redisCommand(REDIS_CONTEXT, "EXPIRE %s %d", CLOSE_FLAGS[fd].token, TOKEN_EXPIRE_TIME);
+    redisCommand(REDIS_CONTEXT, "EXPIRE '%s' %d", CLOSE_FLAGS[fd].token, TOKEN_EXPIRE_TIME);
     pthread_mutex_unlock(&REDIS_MUTEX);
     return 1;
 }
@@ -58,7 +58,7 @@ void heartbeat_callback(void* data) {
     }
     char json_buffer[SOCKET_BUFSIZE];
     char token[SOCKET_BUFSIZE/2];
-    log_info("heartbeat fd num: %d", reply->elements);
+    log_info("online heartbeat fd count: %d", reply->elements);
 
     if (reply->type == REDIS_REPLY_ARRAY) {
         for (int i = 0; i < reply->elements; ++i) {
@@ -110,38 +110,39 @@ void heartbeat_callback(void* data) {
  *          "pull_target": "ID"
  *      }
  * **/
-void notify_clients(void* data){
+void notify_clients(){
+    log_trace("notify begins");
 
-
-    char json_buffer[PIPE_MSG_BUFSIZE];
+    char json_buffer[SOCKET_BUFSIZE];
     int result = get_json_string_from_pipe(json_buffer);
     if (result == -1){
         log_error("connection closed");
         return;
     }
-
+    log_trace("get json from pipe: %s", json_buffer);
     struct notify_item* notify = (struct notify_item*)malloc(sizeof(struct notify_item));
     parse_notify_msg(json_buffer, notify);
 
     pthread_mutex_lock(&REDIS_MUTEX);
-    char sender_id[16];
 
     redisReply * reply;
-
+    log_trace("notify type: %d", notify->type);
     if (notify->type == T_P2P) {
-        create_notify_json(T_P2P, notify->puller, notify->pull_target, json_buffer, SOCKET_BUFSIZE);
+        create_notify_json(notify->puller, notify->pull_target, json_buffer, SOCKET_BUFSIZE);
         reply = redisCommand(REDIS_CONTEXT, "HGET %s token", notify->puller);
     if (reply->type == REDIS_REPLY_NIL){
-        log_error("redis command: HGET %s ip returns nil! The target client is not online", notify->puller);
+        log_warn("redis command: HGET %s ip returns nil! The target client is not online", notify->puller);
         pthread_mutex_unlock(&REDIS_MUTEX);
         freeReplyObject(reply);
         return;
     }
     if (reply->type == REDIS_REPLY_STRING) {
+        log_trace("token: %s", reply->str);
         char target_token[2048];
         strcpy(target_token, reply->str);
         freeReplyObject(reply);
-        reply = redisCommand(REDIS_CONTEXT, "HGET %s %d", target_token, T_NOTIFY);
+        reply = redisCommand(REDIS_CONTEXT, "HGET '%s' %d", target_token, T_NOTIFY);
+        log_trace("NOTIFY fd: %d", reply->integer);
         if (reply->type == REDIS_REPLY_NIL) {
             log_error("redis command: HGET %s %d returns nil! The target client is not online", target_token, T_NOTIFY);
             pthread_mutex_unlock(&REDIS_MUTEX);
@@ -149,9 +150,14 @@ void notify_clients(void* data){
             return;
         }
         if (reply->type == REDIS_REPLY_INTEGER) {
-            *((int*)data) = reply->integer;
             int target_fd = (int) reply->integer;
-            send_json_string_to_socket(json_buffer, target_fd);
+            result = send_json_string_to_socket(json_buffer, target_fd);
+            if (result == -1) {
+                log_error("send notify to fd: %d failed", target_fd);
+                pthread_mutex_unlock(&REDIS_MUTEX);
+                freeReplyObject(reply);
+                return;
+            }
             log_info("notify client %s to pull new messages", target_token);
         }
     }
@@ -168,10 +174,10 @@ void notify_clients(void* data){
                 if(reply->type == REDIS_REPLY_STRING){
                     strcpy(target_token, reply->str);
                     freeReplyObject(reply);
-                    reply = redisCommand(REDIS_CONTEXT, "HGET %s %d", target_token, T_NOTIFY);
+                    reply = redisCommand(REDIS_CONTEXT, "HGET '%s' %d", target_token, T_NOTIFY);
                     if (reply->type == REDIS_REPLY_INTEGER){
                         int target_fd = (int) reply->integer;
-                        create_notify_json(T_P2G, puller, notify->pull_target,json_buffer, SOCKET_BUFSIZE);
+                        create_notify_json(puller, notify->pull_target,json_buffer, SOCKET_BUFSIZE);
                         result = send_json_string_to_socket(json_buffer, target_fd);
                         if (result == -1){
                             log_error("connection closed");

@@ -26,6 +26,7 @@ public class AvoServerApplication implements CommandLineRunner {
         String pid = args[0];
         String fd = args[1];
         String fdPath = "/proc/" + pid + "/fd/" + fd;
+        System.out.println("fdPath: " + fdPath);
         pipeOutputBean.setPipeOutput(new FileOutputStream(fdPath));
     }
 }

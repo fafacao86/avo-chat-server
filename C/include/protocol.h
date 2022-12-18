@@ -24,7 +24,7 @@ struct notify_item {
 #define T_SIGNAL 4
 #define T_PIPE 5
 void heartbeat_callback(void* data);
-void notify_clients(void* data);
+void notify_clients();
 void close_connection_actively(void*data);
 
 #endif //SERVER_PROTOCOL_PROTOCOL_H

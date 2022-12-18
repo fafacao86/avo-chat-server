@@ -13,14 +13,11 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>AVO-server</name>
     <description>AVO-server</description>
-    <!-- <properties>
-        <java.version>17</java.version>
-    </properties> -->
+    <properties>
+        <java.version>11</java.version>
+    </properties>
     <dependencies>
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-data-mongodb</artifactId>-->
-<!--        </dependency>-->
+
 
         <dependency>
             <groupId>com.alibaba</groupId>
@@ -54,8 +51,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.24</version>
-            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -67,6 +63,13 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.14.1</version>
+        </dependency>
+
 
         <!--参数校验-->
         <dependency>

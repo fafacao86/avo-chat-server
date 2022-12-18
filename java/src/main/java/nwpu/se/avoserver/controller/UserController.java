@@ -76,8 +76,10 @@ public class UserController {
         return new RegisterVO(userID);
     }
 
-//    @GetMapping("/user/info")
-//    public UserInfoVO getUserInfo(@RequestBody @Valid GetUserInfoParam getUserInfoParam) {
-//
-//    }
+    @GetMapping("/test/notifyP2P")
+    public Object testNotify() {
+        pipeOutputBean.notifyP2P(12987774,97948661);
+        return new Object();
+    }
+
 }

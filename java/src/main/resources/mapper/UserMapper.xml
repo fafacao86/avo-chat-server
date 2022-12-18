@@ -13,11 +13,11 @@
             <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
     </resultMap>
     <insert id="insertUser">
-        INSERT INTO t_user(user_id, nickname, passwd, sex) VALUES (#{userId}, #{nickname}, #{password}, 1);
+        INSERT INTO t_user(user_id, nickname, passwd, sex) VALUES (#{userID}, #{nickname}, #{password}, 1);
     </insert>
 
 
     <select id="getUserById" resultMap="UserResultMap">
-        SELECT * FROM t_user WHERE user_id = #{userId};
+        SELECT * FROM t_user WHERE user_id = #{userID};
     </select>
 </mapper>

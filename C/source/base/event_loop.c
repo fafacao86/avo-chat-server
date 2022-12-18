@@ -35,7 +35,6 @@ int init_event_loop(struct event_loop *loop)
  * **/
 int event_loop_add_fd(struct event_loop *loop, int fd, unsigned int events, int type)
 {
-    char type_name[32];
     if (loop->event_count == loop->event_capacity) {
         log_error("event loop is full");
         return -1;
@@ -51,6 +50,28 @@ int event_loop_add_fd(struct event_loop *loop, int fd, unsigned int events, int 
     }
     loop->event_count++;
     return 0;
+}
+
+
+/**
+ * 用于重新绑定EPOLLONESHOT事件
+ * 内部保证了信号打断重启
+ * */
+int rearm_oneshot_fd(struct event_loop *loop, int fd, int type){
+    struct epoll_event event;
+    event.data.u64 = fd;
+    event.data.u64 = (event.data.u64 << 32) | type;
+    event.events = EPOLLIN | EPOLLONESHOT;
+    while(epoll_ctl(loop->epoll_fd, EPOLL_CTL_MOD, fd, &event) == -1){
+        if (errno == EINTR) {
+            continue;
+        }else{
+            log_error_with_errno("epoll_ctl");
+            return -1;
+        }
+    }
+
+    return 1;
 }
 
 int event_loop_del(struct event_loop *loop, int fd)

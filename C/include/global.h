@@ -26,7 +26,9 @@ extern char* CONFIG_PATH;
 extern char* LOCK_PATH;
 extern pthread_mutex_t LOG_MUTEX;
 extern pthread_mutex_t CLOSE_MUTEX[EVENT_MAX];
+extern char* JAR_PATH;
 extern char* SPRING_BOOT_JAR_PATH;
+extern char* JAVA_LOG_PATH;
 extern int PIPE_FDS[2];
 extern int SIG_PIPE_FDS[2];
 extern int TIME_SLOT;
@@ -44,4 +46,7 @@ extern pthread_mutex_t CJSON_MUTEX;
 extern int TOKEN_EXPIRE_TIME;
 extern struct timer* HEARTBEAT_TIMER;
 extern pthread_mutex_t ACCEPT_MUTEX;
+extern int SIG_CAUGHT_FLAG[EVENT_MAX];
+extern int SIG_HANDLED_FLAG[EVENT_MAX];
+extern pid_t CHILD_PID;
 #endif
