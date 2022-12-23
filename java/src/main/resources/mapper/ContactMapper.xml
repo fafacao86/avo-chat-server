@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="nwpu.se.avoserver.mapper.ContactMapper">
+
+    <resultMap id="BaseResultMap" type="nwpu.se.avoserver.entity.Contact">
+            <result property="userId" column="user_id" jdbcType="INTEGER"/>
+            <result property="contactList" column="contact_list" jdbcType="VARCHAR"/>
+            <result property="blackList" column="black_list" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        user_id,contact_list,black_list
+    </sql>
+</mapper>

@@ -47,9 +47,10 @@ public class SecurityConfig {
         //授权是指要知道“你有哪些权限，你是否拥有要访问的接口要求的权限“，必须有要求的权限，才算授权成功
         //以/actuator开头的URL是为了暴露运行信息，要直接放行。可以通过/actuator/health查看是否健康，通过/actuator/prometheus查看指标
         http.authorizeRequests().antMatchers(
-                        "/user/login",
-                        "/user/register",
+                        "/api/user/login",
+                        "/api/user/register",
                         "/test/notifyP2P",
+                        "/test/get",
                         "/actuator/**"
                 ).permitAll()
                 .anyRequest().authenticated();

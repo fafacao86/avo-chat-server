@@ -24,7 +24,7 @@ pthread_mutex_t ACCEPT_MUTEX = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t CLOSE_MUTEX[EVENT_MAX];
 int LISTENING_PORT = 5000;
 int PIPE_FDS[2];
-int TIME_SLOT = 18;      //seconds
+int TIME_SLOT = 18000;      //seconds
 int SIG_PIPE_FDS[2];
 int IS_DAEMON=0;
 redisContext *REDIS_CONTEXT = NULL;

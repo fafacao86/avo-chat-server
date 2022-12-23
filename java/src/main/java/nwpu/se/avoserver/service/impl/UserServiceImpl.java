@@ -4,10 +4,12 @@ import nwpu.se.avoserver.common.CommonUtil;
 import nwpu.se.avoserver.constant.ResultCodeEnum;
 import nwpu.se.avoserver.entity.User;
 import nwpu.se.avoserver.exception.BusinessException;
+import nwpu.se.avoserver.param.GetUserInfoParam;
 import nwpu.se.avoserver.param.LoginParam;
 import nwpu.se.avoserver.param.RegisterParam;
 import nwpu.se.avoserver.service.UserService;
 import nwpu.se.avoserver.mapper.UserMapper;
+import nwpu.se.avoserver.vo.UserInfoVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -57,6 +59,18 @@ public class UserServiceImpl implements UserService{
         }
         catch (Exception e){
             throw new BusinessException(ResultCodeEnum.REPEAT_OPERATION, e.getMessage());
+        }
+    }
+
+    @Override
+    public UserInfoVO getUserInfo(GetUserInfoParam getUserInfoParam) {
+        try {
+            User user = userMapper.getUserById(getUserInfoParam.getUserID());
+            UserInfoVO userInfoVO = new UserInfoVO(user.getUserId(), user.getNickname(), user.getSex());
+            userInfoVO.setNickname(user.getNickname());
+            return userInfoVO;
+        }catch (Exception e){
+            throw new BusinessException(ResultCodeEnum.INTERNAL_ERROR, e.getMessage());
         }
     }
 }

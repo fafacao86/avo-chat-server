@@ -38,13 +38,11 @@ public class UserController {
     @Autowired
     private JwtUtil jwtUtil;
 
-    @Autowired
-    private CommonUtil commonUtil;
 
     @Autowired
     private PipeOutputBean pipeOutputBean;
 
-    @PostMapping("/user/login")
+    @PostMapping("/api/user/login")
     public Object login(@RequestBody @Valid LoginParam loginParam, HttpServletResponse response) {
         User user = userService.login(loginParam);
         String token = jwtUtil.getTokenFromUser(user);
@@ -57,7 +55,7 @@ public class UserController {
         return new Object();
     }
 
-    @PostMapping("/user/logout")
+    @PostMapping("/api/user/logout")
     public Object logout(HttpServletRequest request) {
         String token = request.getHeader("token");
         User user = jwtUtil.getUserFromToken(token);
@@ -69,7 +67,7 @@ public class UserController {
         return new Object();
     }
 
-    @PostMapping("/user/register")
+    @PostMapping("/api/user/register")
     public RegisterVO register(@RequestBody @Valid RegisterParam registerParam) {
         int userID =  userService.register(registerParam);
 
@@ -81,5 +79,22 @@ public class UserController {
         pipeOutputBean.notifyP2P(12987774,97948661);
         return new Object();
     }
+
+    @GetMapping("/test/get")
+    public RegisterVO testGet(@Valid RegisterParam registerParam, HttpServletResponse response){
+        System.out.println(registerParam);
+        User user = new User();
+        user.setUserId(12345678);
+        String token = jwtUtil.getTokenFromUser(user);
+        response.setHeader("token", token);
+        return new RegisterVO(12345678);
+    }
+
+    @GetMapping("/api/user/info")
+    public UserInfoVO getUserInfo(@Valid GetUserInfoParam getUserInfoParam) {
+        return userService.getUserInfo(getUserInfoParam);
+    }
+
+
 
 }

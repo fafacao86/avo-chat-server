@@ -1,8 +1,10 @@
 package nwpu.se.avoserver.service;
 
 import nwpu.se.avoserver.entity.User;
+import nwpu.se.avoserver.param.GetUserInfoParam;
 import nwpu.se.avoserver.param.LoginParam;
 import nwpu.se.avoserver.param.RegisterParam;
+import nwpu.se.avoserver.vo.UserInfoVO;
 
 /**
 * @author xiaoheng
@@ -14,4 +16,6 @@ public interface UserService {
     User login(LoginParam loginParam);
 
     int register(RegisterParam registerParam);
+
+    UserInfoVO getUserInfo(GetUserInfoParam getUserInfoParam);
 }

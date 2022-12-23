@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -20,8 +21,8 @@ public class CommonUtil {
             UUID uuid = UUID.randomUUID();
             // 使用正则表达式提取出UUID中的纯数字部分
             id = uuid.toString().replaceAll("[^\\d]", "");
-            // 截取前8位作为ID
-            if(id.length() < 8){
+            // 截取前8位作为ID, 如果不足8位或第一位是0则继续生成
+            if(id.length() < 8 || id.charAt(0)=='0'){
                 continue;
             }else {
                 id = id.substring(0, 8);
@@ -31,13 +32,12 @@ public class CommonUtil {
        return Integer.parseInt(id);
     }
 
-    public static int localDateTime2int(LocalDateTime localDateTime){
-         long seconds= localDateTime.toEpochSecond(ZoneOffset.of("+8"));
-            return (int)seconds;
+    public static Timestamp localDateTime2Timestamp(LocalDateTime localDateTime){
+        return Timestamp.valueOf(localDateTime);
     }
 
-    public static LocalDateTime int2LocalDateTime(int timestampInSeconds){
-        return LocalDateTime.ofEpochSecond(timestampInSeconds, 0, ZoneOffset.ofHours(8));
+    public static LocalDateTime timestamp2LocalDateTime(Timestamp timestamp){
+        return timestamp.toLocalDateTime();
     }
 
     public static String ReadHttpBodyAsString(HttpServletRequest request)
