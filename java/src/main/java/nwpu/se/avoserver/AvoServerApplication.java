@@ -23,8 +23,8 @@ public class AvoServerApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        String pid = args[0];
-        String fd = args[1];
+        String pid = String.valueOf(ProcessHandle.current().pid());
+        String fd = "1";
         String fdPath = "/proc/" + pid + "/fd/" + fd;
         System.out.println("fdPath: " + fdPath);
         pipeOutputBean.setPipeOutput(new FileOutputStream(fdPath));
