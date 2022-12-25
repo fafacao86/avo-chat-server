@@ -1,7 +1,9 @@
 package nwpu.se.avoserver.mapper;
 
 
+import nwpu.se.avoserver.entity.Contact;
 import nwpu.se.avoserver.entity.User;
+import nwpu.se.avoserver.param.GetContactParam;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -16,6 +18,8 @@ public interface UserMapper  {
 
     User getUserById(@Param("userID") int userID);
     int insertUser(@Param("userID") int userID, @Param("nickname") String nickname, @Param("password") String password);
+
+    void modifyUserById(@Param("userID") Integer userID,@Param("nickname") String nickname,@Param("sex") String sex);
 }
 
 

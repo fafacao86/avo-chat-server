@@ -13,4 +13,18 @@
     <sql id="Base_Column_List">
         user_id,contact_list,black_list
     </sql>
+
+    <resultMap id="ContactResultMap" type="nwpu.se.avoserver.entity.Contact">
+        <id property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="contactList" column="contact_list" jdbcType="LONGVARCHAR"/>
+        <result property="blackList" column="black_list" jdbcType="LONGVARCHAR"/>
+    </resultMap>
+
+    <select id="getContactById" resultMap="ContactResultMap">
+        select * from t_contact where user_id = #{userID};
+    </select>
+
+    <update id="updateContact">
+        update t_contact set contact_list = #{contactList} where user_id = #{userID};
+    </update>
 </mapper>
