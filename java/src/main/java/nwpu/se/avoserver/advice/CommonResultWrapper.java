@@ -18,7 +18,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
  * 如果在Controller的方法参数列表里有HttpServletResponse，且方法返回为void或null，会导致这个包装器失效。（这真是一个奇怪的问题）
  * 所以一旦在Controller的方法里用到HttpServletResponse，而且又没东西想返回的适合，建议返回一个new Object();总之别返回void或者null
  */
-@RestControllerAdvice(basePackages = "club.devhub.messageboard.controller")
+@RestControllerAdvice(basePackages = "nwpu.se.avoserver")
 @Slf4j
 public class CommonResultWrapper implements ResponseBodyAdvice<Object> {
 

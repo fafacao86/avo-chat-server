@@ -10,11 +10,10 @@ import nwpu.se.avoserver.common.RedisUtil;
 import nwpu.se.avoserver.constant.ResultCodeEnum;
 import nwpu.se.avoserver.entity.User;
 import nwpu.se.avoserver.exception.BusinessException;
-import nwpu.se.avoserver.param.GetUserInfoParam;
-import nwpu.se.avoserver.param.LoginParam;
-import nwpu.se.avoserver.param.RegisterParam;
+import nwpu.se.avoserver.param.*;
 import nwpu.se.avoserver.protocol.PipeOutputBean;
 import nwpu.se.avoserver.service.UserService;
+import nwpu.se.avoserver.vo.ContactVO;
 import nwpu.se.avoserver.vo.RegisterVO;
 import nwpu.se.avoserver.vo.UserInfoVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.net.http.HttpRequest;
 import java.util.function.ObjLongConsumer;
 
 @RestController
@@ -37,7 +37,6 @@ public class UserController {
 
     @Autowired
     private JwtUtil jwtUtil;
-
 
     @Autowired
     private PipeOutputBean pipeOutputBean;
@@ -91,10 +90,14 @@ public class UserController {
     }
 
     @GetMapping("/api/user/info")
-    public UserInfoVO getUserInfo(@Valid GetUserInfoParam getUserInfoParam) {
+    public UserInfoVO getUserInfo(@RequestBody @Valid GetUserInfoParam getUserInfoParam) {
         return userService.getUserInfo(getUserInfoParam);
     }
 
-
-
+    @PostMapping("api/user/info")
+    public Object modifyUserInfo(@RequestBody @Valid ModifyUserInfoParam modifyUserInfoParam, HttpServletRequest request){
+        User user = jwtUtil.getUserFromToken(request.getHeader("token"));
+        return userService.modifyUserInfo(user.getUserId(),modifyUserInfoParam.getNickname(),
+                modifyUserInfoParam.getSex());
+    }
 }
