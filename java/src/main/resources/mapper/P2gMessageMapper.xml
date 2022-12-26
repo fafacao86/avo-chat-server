@@ -13,8 +13,5 @@
             <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
     </resultMap>
 
-    <sql id="Base_Column_List">
-        message_id,sender_id,group_id,
-        content_json,create_time,update_time
-    </sql>
+
 </mapper>

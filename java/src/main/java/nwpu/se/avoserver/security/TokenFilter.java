@@ -53,8 +53,10 @@ public class TokenFilter extends OncePerRequestFilter {
             User user;
             try {
                 user = jwtUtil.getUserFromToken(token);
+                System.out.println(user);
                 //覆盖之前放入MDC的userId
                 MDC.put("userId", user.getUserId().toString());
+                log.info("用户{}已登录", user.getUserId());
             }
             catch (Exception e) {
                 log.warn("在解析token时出错，错误原因:{}", e.getMessage());

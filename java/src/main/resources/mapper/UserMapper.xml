@@ -16,11 +16,13 @@
         INSERT INTO t_user(user_id, nickname, passwd, sex) VALUES (#{userID}, #{nickname}, #{password}, 1);
     </insert>
 
-    <select id="getUserById" resultMap="UserResultMap">
-        SELECT * FROM t_user WHERE user_id = #{userID};
-    </select>
 
     <update id="modifyUserById">
         update t_user set nickname = #{nickname}, sex=#{sex} where user_id = #{userID};
     </update>
+
+
+    <select id="getUserById" resultMap="UserResultMap">
+        SELECT * FROM t_user WHERE user_id = #{userID};
+    </select>
 </mapper>

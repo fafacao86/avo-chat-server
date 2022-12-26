@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="nwpu.se.avoserver.mapper.P2pMessageMapper">
 
-    <resultMap id="BaseResultMap" type="nwpu.se.avoserver.entity.P2pMessage">
+    <resultMap id="P2pMessageMap" type="nwpu.se.avoserver.entity.P2pMessage">
             <id property="messageId" column="message_id" jdbcType="BIGINT"/>
             <result property="fromId" column="from_id" jdbcType="INTEGER"/>
             <result property="toId" column="to_id" jdbcType="INTEGER"/>
@@ -12,9 +12,16 @@
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
     </resultMap>
+    <insert id="insertP2pMessage">
+        INSERT INTO t_p2p_message(from_id, to_id, content_json)
+        VALUES(#{from_id}, #{to_id}, #{content})
+    </insert>
 
-    <sql id="Base_Column_List">
-        message_id,from_id,to_id,
-        content_json,create_time,update_time
-    </sql>
+
+    <select id="selectByIdAndAfterTime" resultMap="P2pMessageMap">
+        SELECT * FROM t_p2p_message
+        WHERE to_id = #{to_id}
+        AND create_time > #{create_time}
+        ORDER BY create_time ASC
+    </select>
 </mapper>

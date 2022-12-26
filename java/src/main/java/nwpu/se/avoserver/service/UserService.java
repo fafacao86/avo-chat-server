@@ -1,11 +1,9 @@
 package nwpu.se.avoserver.service;
 
 import nwpu.se.avoserver.entity.User;
-import nwpu.se.avoserver.param.GetContactParam;
 import nwpu.se.avoserver.param.GetUserInfoParam;
 import nwpu.se.avoserver.param.LoginParam;
 import nwpu.se.avoserver.param.RegisterParam;
-import nwpu.se.avoserver.vo.ContactVO;
 import nwpu.se.avoserver.vo.UserInfoVO;
 
 /**

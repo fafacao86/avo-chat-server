@@ -9,29 +9,29 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 
-
 /**
- * 发送P2P消息
+ * 拉取P2P消息参数
  * */
 @Data
-public class SendP2pMsgParam {
-    /**
+public class GetP2pMsgParam {
+/**
      * senderID: 发送者ID
      * */
     @Min(value = 10000000, message = "ID长度必须为8位")
     @Max(value = 99999999, message = "ID长度必须为8位")
-    private int senderID;
+    private Integer senderID;
+
 
     /**
-     * receiverID: 接受者ID
+     * receiverID: 接收者ID
      * */
     @Min(value = 10000000, message = "ID长度必须为8位")
     @Max(value = 99999999, message = "ID长度必须为8位")
-    private int receiverID;
+    private Integer receiverID;
+
 
     /**
-     * content: 消息内容
+     * after_time: 自多久以来的消息
      * */
-    @NotBlank
-    private String content;
+    private long after_time;
 }

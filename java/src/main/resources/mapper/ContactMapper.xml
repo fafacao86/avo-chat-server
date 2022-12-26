@@ -27,4 +27,8 @@
     <update id="updateContact">
         update t_contact set contact_list = #{contactList} where user_id = #{userID};
     </update>
+
+    <insert id="insertContact">
+        insert into t_contact(user_id,contact_list,black_list) values (#{userId},#{contactList},#{blackList});
+    </insert>
 </mapper>

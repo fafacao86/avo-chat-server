@@ -1,9 +1,7 @@
 package nwpu.se.avoserver.mapper;
 
 
-import nwpu.se.avoserver.entity.Contact;
 import nwpu.se.avoserver.entity.User;
-import nwpu.se.avoserver.param.GetContactParam;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

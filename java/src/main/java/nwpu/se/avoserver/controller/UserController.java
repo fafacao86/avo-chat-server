@@ -1,23 +1,21 @@
 package nwpu.se.avoserver.controller;
 
 
-import lombok.Generated;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import nwpu.se.avoserver.common.CommonUtil;
 import nwpu.se.avoserver.common.JwtUtil;
 import nwpu.se.avoserver.common.RedisUtil;
 import nwpu.se.avoserver.constant.ResultCodeEnum;
 import nwpu.se.avoserver.entity.User;
 import nwpu.se.avoserver.exception.BusinessException;
-import nwpu.se.avoserver.param.*;
+import nwpu.se.avoserver.param.GetUserInfoParam;
+import nwpu.se.avoserver.param.LoginParam;
+import nwpu.se.avoserver.param.ModifyUserInfoParam;
+import nwpu.se.avoserver.param.RegisterParam;
 import nwpu.se.avoserver.protocol.PipeOutputBean;
 import nwpu.se.avoserver.service.UserService;
-import nwpu.se.avoserver.vo.ContactVO;
 import nwpu.se.avoserver.vo.RegisterVO;
 import nwpu.se.avoserver.vo.UserInfoVO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,8 +24,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.net.http.HttpRequest;
-import java.util.function.ObjLongConsumer;
 
 @RestController
 @Slf4j
@@ -37,6 +33,7 @@ public class UserController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
 
     @Autowired
     private PipeOutputBean pipeOutputBean;
@@ -90,7 +87,7 @@ public class UserController {
     }
 
     @GetMapping("/api/user/info")
-    public UserInfoVO getUserInfo(@RequestBody @Valid GetUserInfoParam getUserInfoParam) {
+    public UserInfoVO getUserInfo(@Valid GetUserInfoParam getUserInfoParam) {
         return userService.getUserInfo(getUserInfoParam);
     }
 
@@ -100,4 +97,5 @@ public class UserController {
         return userService.modifyUserInfo(user.getUserId(),modifyUserInfoParam.getNickname(),
                 modifyUserInfoParam.getSex());
     }
+
 }

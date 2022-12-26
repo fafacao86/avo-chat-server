@@ -10,6 +10,8 @@ import nwpu.se.avoserver.vo.ContactVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+
 
 /**
 * @author xiaoheng
@@ -55,14 +57,30 @@ public class ContactServiceImpl implements ContactService{
     @Override
     public Object modifyContact(Integer userId, int targetID, int operationType) {
         try {
-            Contact contact = contactMapper.getContactById(userId);
-            JSONArray contactList = JSONArray.parseArray(contact.getContactList());
             if (operationType == 1){
-                contactList.remove((Integer)targetID);
-                contactMapper.updateContact(userId,JSONArray.toJSONString(contactList));
+                Contact contact = contactMapper.getContactById(userId);
+                if(contact == null){
+                    throw new BusinessException(ResultCodeEnum.INTERNAL_ERROR,"该用户通讯录不存在");
+                }
+                JSONArray contactList = JSONArray.parseArray(contact.getContactList());
+                if (contactList.contains((Integer) targetID)){
+                    contactList.remove((Integer)targetID);
+                    contactMapper.updateContact(userId,JSONArray.toJSONString(contactList));
+                }else {
+                    throw new BusinessException(ResultCodeEnum.INTERNAL_ERROR,"要删除的用户不再通讯录内");
+                }
             }else if (operationType == 2){
-                contactList.add((Integer)targetID);
-                contactMapper.updateContact(userId,JSONArray.toJSONString(contactList));
+                Contact contact = contactMapper.getContactById(userId);
+                if (contact == null){
+                    ArrayList<Integer> contactList = new ArrayList<>();
+                    ArrayList<Integer> blackList = new ArrayList<>();
+                    contactList.add((Integer) targetID);
+                    contactMapper.insertContact(userId,JSONArray.toJSONString(contactList),JSONArray.toJSONString(blackList));
+                }else {
+                    JSONArray contactList = JSONArray.parseArray(contact.getContactList());
+                    contactList.add((Integer)targetID);
+                    contactMapper.updateContact(userId,JSONArray.toJSONString(contactList));
+                }
             }
             return new Object();
         }catch (Exception e){

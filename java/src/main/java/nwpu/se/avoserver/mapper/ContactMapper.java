@@ -18,6 +18,9 @@ public interface ContactMapper {
     Contact getContactById(@Param("userID") int userID);
 
     void updateContact(@Param("userID") int userID,@Param("contactList") String contactList);
+
+    void insertContact(@Param("userId") Integer userId, @Param("contactList") String contactList,
+                       @Param("blackList") String blackList);
 }
 
 

@@ -1,6 +1,11 @@
 package nwpu.se.avoserver.service;
 
 
+import nwpu.se.avoserver.entity.P2pMessage;
+import nwpu.se.avoserver.param.GetP2pMsgParam;
+import nwpu.se.avoserver.param.SendP2pMsgParam;
+
+import java.util.List;
 
 /**
 * @author xiaoheng
@@ -9,4 +14,7 @@ package nwpu.se.avoserver.service;
 */
 public interface P2pMessageService  {
 
+    List<P2pMessage> getP2pMessage(GetP2pMsgParam getP2pMsgParam);
+
+    void sendP2pMessage(SendP2pMsgParam sendP2pMsgParam);
 }

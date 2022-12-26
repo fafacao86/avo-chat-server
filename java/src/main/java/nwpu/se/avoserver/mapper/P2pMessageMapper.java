@@ -1,7 +1,14 @@
 package nwpu.se.avoserver.mapper;
 
 
+import nwpu.se.avoserver.entity.P2pMessage;
+import nwpu.se.avoserver.vo.P2pMessageVO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 /**
 * @author xiaoheng
@@ -11,7 +18,9 @@ import org.apache.ibatis.annotations.Mapper;
 */
 @Mapper
 public interface P2pMessageMapper  {
+     List<P2pMessage> selectByIdAndAfterTime(@Param("to_id") Integer receiverID, @Param("create_time") LocalDateTime after_time);
 
+    int insertP2pMessage(@Param("from_id") Integer senderID, @Param("to_id") Integer receiverID, @Param("content") String content);
 }
 
 
