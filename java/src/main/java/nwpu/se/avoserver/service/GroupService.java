@@ -1,6 +1,7 @@
 package nwpu.se.avoserver.service;
 
 
+import nwpu.se.avoserver.vo.GroupVO;
 
 /**
 * @author xiaoheng
@@ -9,4 +10,13 @@ package nwpu.se.avoserver.service;
 */
 public interface GroupService {
 
+    Object createGroup(Integer userId, String groupName);
+
+    Object modifyGroupName(int groupId, String groupName);
+
+    GroupVO getGroupInfo(int groupID);
+
+    Object joinInGroup(int groupID, Integer userId);
+
+    Object quitGroup(int groupID, Integer userId);
 }

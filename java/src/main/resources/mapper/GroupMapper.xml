@@ -13,5 +13,26 @@
             <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
     </resultMap>
 
+    <sql id="Base_Column_List">
+        group_id,owner_id,group_name,
+        members,create_time,update_time
+    </sql>
+
+
+    <select id="getGroupById" resultMap="BaseResultMap">
+        select * from t_group where group_id = #{groupId};
+    </select>
+
+    <insert id="createGroup">
+        insert into t_group(group_id,owner_id,group_name,members) values (#{groupId}, #{ownerId}, #{groupName}, #{members});
+    </insert>
+
+    <update id="modifyGroupName">
+        update t_group set group_name = #{groupName} where group_id = #{groupId};
+    </update>
+
+    <update id="updateMembers">
+        update t_group set members = #{members} where group_id = #{groupID};
+    </update>
 
 </mapper>
