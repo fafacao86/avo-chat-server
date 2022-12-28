@@ -4,9 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import nwpu.se.avoserver.common.JwtUtil;
 import nwpu.se.avoserver.entity.User;
 import nwpu.se.avoserver.param.*;
+import nwpu.se.avoserver.service.ContactService;
 import nwpu.se.avoserver.service.GroupService;
 import nwpu.se.avoserver.vo.GroupVO;
+import nwpu.se.avoserver.vo.IsGroupVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,6 +24,9 @@ public class GroupController {
 
     @Autowired
     private GroupService groupService;
+
+    @Autowired
+    private ContactService contactService;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -41,15 +47,26 @@ public class GroupController {
         return groupService.getGroupInfo(getGroupInfoParam.getGroupID());
     }
 
+    @Transactional
     @PostMapping("/group/join")
     public Object joinInGroup(@RequestBody @Valid JoinInGroupParam joinInGroupParam, HttpServletRequest request){
         User user = jwtUtil.getUserFromToken(request.getHeader("token"));
-        return groupService.joinInGroup(joinInGroupParam.getGroupID(), user.getUserId());
+        groupService.joinInGroup(joinInGroupParam.getGroupID(), user.getUserId());
+        contactService.modifyContact(user.getUserId(),joinInGroupParam.getGroupID(),2);
+        return new Object();
     }
 
+    @Transactional
     @PostMapping("/group/quit")
     public Object quitGroup(@RequestBody @Valid QuitGroupParam quitGroupParam, HttpServletRequest request){
         User user = jwtUtil.getUserFromToken(request.getHeader("token"));
-        return groupService.quitGroup(quitGroupParam.getGroupID(), user.getUserId());
+        groupService.quitGroup(quitGroupParam.getGroupID(), user.getUserId());
+        contactService.modifyContact(user.getUserId(),quitGroupParam.getGroupID(),1);
+        return new Object();
+    }
+
+    @GetMapping("/group/isGroup")
+    public IsGroupVO isGroup(@RequestBody @Valid IsGroupParam isGroupParam){
+        return groupService.isGroup(isGroupParam.getTargetID());
     }
 }
