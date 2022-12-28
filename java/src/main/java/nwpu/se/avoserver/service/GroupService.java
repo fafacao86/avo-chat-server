@@ -2,6 +2,7 @@ package nwpu.se.avoserver.service;
 
 
 import nwpu.se.avoserver.vo.GroupVO;
+import nwpu.se.avoserver.vo.IsGroupVO;
 
 /**
 * @author xiaoheng
@@ -16,7 +17,9 @@ public interface GroupService {
 
     GroupVO getGroupInfo(int groupID);
 
-    Object joinInGroup(int groupID, Integer userId);
+    void joinInGroup(int groupID, Integer userId);
 
-    Object quitGroup(int groupID, Integer userId);
+    void quitGroup(int groupID, Integer userId);
+
+    IsGroupVO isGroup(int groupID);
 }

@@ -8,6 +8,7 @@ import nwpu.se.avoserver.exception.BusinessException;
 import nwpu.se.avoserver.service.GroupService;
 import nwpu.se.avoserver.mapper.GroupMapper;
 import nwpu.se.avoserver.vo.GroupVO;
+import nwpu.se.avoserver.vo.IsGroupVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -77,7 +78,7 @@ public class GroupServiceImpl implements GroupService{
     }
 
     @Override
-    public Object joinInGroup(int groupID, Integer userId) {
+    public void joinInGroup(int groupID, Integer userId) {
         try {
             Group group = groupMapper.getGroupById(groupID);
             if (group == null){
@@ -90,14 +91,13 @@ public class GroupServiceImpl implements GroupService{
                 ja.add(userId);
                 groupMapper.updateMembers(groupID, JSONArray.toJSONString(ja));
             }
-            return new Object();
         }catch (Exception e){
             throw new BusinessException(ResultCodeEnum.INTERNAL_ERROR, e.getMessage());
         }
     }
 
     @Override
-    public Object quitGroup(int groupID, Integer userId) {
+    public void quitGroup(int groupID, Integer userId) {
         try {
             Group group = groupMapper.getGroupById(groupID);
             if (group == null){
@@ -110,7 +110,20 @@ public class GroupServiceImpl implements GroupService{
             }else {
                 throw new BusinessException(ResultCodeEnum.INTERNAL_ERROR, userId + "不在群聊中");
             }
-            return new Object();
+        }catch (Exception e){
+            throw new BusinessException(ResultCodeEnum.INTERNAL_ERROR, e.getMessage());
+        }
+    }
+
+    @Override
+    public IsGroupVO isGroup(int groupID) {
+        try {
+            Group group = groupMapper.getGroupById(groupID);
+            if (group != null){
+                return new IsGroupVO(true);
+            }else {
+                return new IsGroupVO(false);
+            }
         }catch (Exception e){
             throw new BusinessException(ResultCodeEnum.INTERNAL_ERROR, e.getMessage());
         }

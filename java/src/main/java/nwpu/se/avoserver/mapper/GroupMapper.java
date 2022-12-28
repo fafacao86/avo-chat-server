@@ -23,6 +23,7 @@ public interface GroupMapper {
     void modifyGroupName(@Param("groupId") int groupId, @Param("groupName") String groupName);
 
     void updateMembers(@Param("groupID") int groupID, @Param("members") String members);
+
 }
 
 
