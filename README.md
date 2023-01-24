@@ -9,7 +9,8 @@ AVO, a simple P2P and P2G real-time chatting app, server repo written in C and J
 ![MySQL](https://img.shields.io/badge/mysql-%2300f.svg?style=for-the-badge&logo=mysql&logoColor=white)
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)<br>
 ## :pushpin:简介
-
+**本项目是作者大二上学期的一门课程作业，代码缺陷很多，仅供学习使用。**<br>
+<br>
 AVO是一款轻量级的P2P和P2G即时聊天软件，服务端采用C和Java配合编写。<br><br>
 C主要负责通信协议的编写，协议职责有如下三点：
 * 心跳检测，定期发送检查客户端是否在线
