@@ -10,6 +10,7 @@
 ## :pushpin:简介
 
 **本项目是作者大二上学期的一门课程作业**<br>
+客户端Repo：https://github.com/xiaoheng86/avo-chat-client
 <br>
 AVO是一款支持私聊和群聊的即时聊天软件，服务端采用C和Java配合编写。<br><br>
 C主要负责消息通知功能的编写，协议职责有如下三点：
@@ -22,7 +23,7 @@ C主要负责消息通知功能的编写，协议职责有如下三点：
   
   <br>
   Java服务端采用SpringBoot框架，接口设计遵循RESTful风格。<br>
-  接口文档：https://www.apifox.cn/apidoc/shared-04c58c23-00fc-4de2-81fd-131f625ed5bc
+  ApiFox接口文档：https://www.apifox.cn/apidoc/shared-04c58c23-00fc-4de2-81fd-131f625ed5bc
   <br>
   进程间通信使用Linux无名管道
 
