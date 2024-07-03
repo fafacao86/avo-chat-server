@@ -19,7 +19,7 @@ C主要负责消息通知功能的编写，协议职责有如下三点：
   <br>
   进程间通信使用Linux无名管道
 
-## :pushpin:部署与运行
+## 部署与运行
 
 在项目路径/java/src/main/resources/docker-compose.yml为dockercompose文件<br>
 
@@ -81,7 +81,7 @@ services:
   <br>C程序会自动fork并启动springboot server
   <br>注：参数和配置文件详细信息请参考下节。
 
-## :pushpin:架构设计
+## 架构设计
 
 ### 通信方式
 
@@ -108,7 +108,7 @@ services:
 
 
 
-## :pushpin:开源资源
+## 开源资源
 
 **hiredis**:&emsp;[Minimalistic C client for Redis](https://github.com/redis/hiredis)<br>
 **cJSON**:&emsp;[Ultralightweight JSON parser in ANSI C](https://github.com/DaveGamble/cJSON)<br>
