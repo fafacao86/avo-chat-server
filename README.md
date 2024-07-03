@@ -1,5 +1,5 @@
 # avo-chat-server
-## :pushpin:简介
+## 简介
 
 **本项目是作者大二上学期的一门课程作业**<br>
 客户端Repo：https://github.com/xiaoheng86/avo-chat-client
