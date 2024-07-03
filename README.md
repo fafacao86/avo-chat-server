@@ -1,12 +1,4 @@
 # avo-chat-server
-
-![](https://img.shields.io/badge/c-%2300599C.svg?style=for-the-badge&logo=&logoColor=white)
-![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=java&logoColor=white)
-![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white)
-![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)
-![MySQL](https://img.shields.io/badge/mysql-%2300f.svg?style=for-the-badge&logo=mysql&logoColor=white)
-![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)<br>
-
 ## :pushpin:简介
 
 **本项目是作者大二上学期的一门课程作业**<br>
@@ -96,7 +88,7 @@ services:
 ![message flow](https://github.com/xiaoheng86/avo-chat-server/blob/main/readme/messageflow.jpg)<br>
 &emsp;服务端C语言server使用原生socket，和客户端的C语言client-protocol通信，使用JSON格式交换信息。<br>
 
-&emsp;当SpringBoot服务器收到一条新消息时，会向管道发送一条"notify_json"，包含了消息的类型是P2P还是P2G, pullerID和targetID，分别代表该谁拉消息和拉谁发的消息。server-protocol收到notify_json以后，会向puller客户端的C语言网络通信处理进程转发json，客户端的C语言程序再通过管道向python GTK客户端发消息，客户端再对Springboot server的/message/P2P或者/message/P2G接口发送GET请求，拉取最新消息。
+&emsp;当SpringBoot服务器收到一条新消息时，会向管道发送一条"notify_json"， pullerID和targetID，分别代表该谁拉消息和拉谁发的消息。server-protocol收到notify_json以后，会向puller客户端的C语言网络通信处理进程转发json，客户端的C语言程序再通过管道向python GTK客户端发消息，客户端再对Springboot server发送GET请求，拉取最新消息。
 <br>
 
 ### C server设计
